@@ -1,0 +1,4 @@
+// Microsoft Visual C++ generated Help ID include file.
+// Used by keithley1.rc
+//
+#define HIDC_HELP                       0x806603f5    // IDD_KEITHLEY1_DIALOG
