@@ -1,0 +1,9 @@
+import os
+env = Environment(ENV = {'PATH':os.environ['PATH']} )
+env.ParseConfig('root-config --cflags')
+env.ParseConfig('root-config --glibs')
+env.Append(CPPPATH = ['/usr/local/linuxvmeen_util'])
+env.Append(LIBPATH = ['/usr/local/linuxvmeen_util/'])
+env.Append(LIBS = ['cctvmeen'])
+obj=env.Object(Glob('*.cpp'))
+env.Program('lsi',list(obj))
