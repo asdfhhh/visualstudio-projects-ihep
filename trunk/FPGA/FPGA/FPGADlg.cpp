@@ -125,14 +125,24 @@ void CFPGADlg::OnBnClickedOk()
 	while(1)
 	{
 		f_in.Read(&tmp_data,2);
+		if((f_in.GetPosition()%(f_in.GetLength()/100))==0)
+		{
+			m_Progress.StepIt();
+			//			Sleep(0.1);
+		}
 		if((tmp_data&0xfe00)==0xfe00)
 		{
 			offset=f_in.GetPosition();
 			bit_data[count]=tmp_data;
 			count++;
-			for(;count<14336;count++)
+			for(;count<MEM_NUM;count++)
 			{
 				f_in.Read(&tmp_data,2);
+				if((f_in.GetPosition()%(f_in.GetLength()/100))==0)
+				{
+					m_Progress.StepIt();
+					//			Sleep(0.1);
+				}
 				bit_data[count]=tmp_data;
 			}
 			break;
@@ -149,7 +159,7 @@ void CFPGADlg::OnBnClickedOk()
 		}
 		if((tmp_data&0xfe00)==0xfe00)
 		{
-			if((f_in.GetPosition()-offset)%14336!=0)
+			if((f_in.GetPosition()-offset)%MEM_NUM!=0)
 			{
 				sprintf(out_char,"2\t %d\t ",f_in.GetPosition());
 				f_out.Write(out_char,::strlen(out_char));

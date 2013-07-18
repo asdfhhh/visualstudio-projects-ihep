@@ -3,7 +3,7 @@
 
 #pragma once
 
-
+#define MEM_NUM 22528
 // CFPGADlg ¶Ô»°¿ò
 class CFPGADlg : public CDialog
 {
@@ -32,7 +32,7 @@ public:
 	CFile f_out;
 	CFile f_in;
 	CProgressCtrl	m_Progress;
-	unsigned int bit_data[14336];
+	unsigned int bit_data[MEM_NUM];
 
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnNMCustomdrawProgress1(NMHDR *pNMHDR, LRESULT *pResult);
