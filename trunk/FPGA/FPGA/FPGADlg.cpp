@@ -100,20 +100,22 @@ void CFPGADlg::OnBnClickedOk()
 	unsigned long int offset=0;
 	char out_char[100];
 	CString message;
+	CString OutName;
 	if (!f_in.Open(StrFileName,CFile::modeRead|CFile::typeBinary,NULL))
 	{
 		AfxMessageBox(_T("Invalid File Name!"));
 		return;
 	}
-	long a=f_in.GetLength();
-	if(!f_out.Open(_T("output.txt"),CFile::modeCreate|CFile::modeReadWrite,NULL))
+	OutName=StrFileName+_T(".txt");
+	//long a=f_in.GetLength();
+	if(!f_out.Open(OutName,CFile::modeCreate|CFile::modeReadWrite,NULL))
 	{
 		return;
 	}
 	sprintf(out_char,"Error code:1 upset, 2 length error");
 	f_out.Write(out_char,::strlen(out_char));
 	f_out.Write("\r\n",2);
-	sprintf(out_char,"code\t position\t orignal\t present\t memory");
+	sprintf(out_char,"code\t position\t ori\t prt\t memory");
 	f_out.Write(out_char,::strlen(out_char));
 	f_out.Write("\r\n",2);
 
@@ -133,7 +135,7 @@ void CFPGADlg::OnBnClickedOk()
 		if((tmp_data&0xfe00)==0xfe00)
 		{
 			offset=f_in.GetPosition();
-			bit_data[count]=tmp_data;
+			bit_data[count]=unsigned int(tmp_data&0x0000ffff);
 			count++;
 			for(;count<MEM_NUM;count++)
 			{
@@ -143,7 +145,7 @@ void CFPGADlg::OnBnClickedOk()
 					m_Progress.StepIt();
 					//			Sleep(0.1);
 				}
-				bit_data[count]=tmp_data;
+			bit_data[count]=unsigned int(tmp_data&0x0000ffff);
 			}
 			break;
 		}
@@ -157,51 +159,47 @@ void CFPGADlg::OnBnClickedOk()
 			m_Progress.StepIt();
 			//			Sleep(0.1);
 		}
-		if((tmp_data&0xfe00)==0xfe00)
+		if((tmp_data&0xfe00)==0x0000fe00)//head check
 		{
 			if((f_in.GetPosition()-offset)%MEM_NUM!=0)
 			{
 				sprintf(out_char,"2\t %d\t ",f_in.GetPosition());
 				f_out.Write(out_char,::strlen(out_char));
+					f_out.Write("\r\n",2);
+			bit_data[count]=unsigned int(tmp_data&0x0000ffff);
 			}
-			count=0;
-			if((tmp_data&0x01ff)!=(bit_data[count]&0x01ff))
+			count=1;
+			for(;count<MEM_NUM;count++)
 			{
-				err++;
-				sprintf(out_char,"1\t %d",f_in.GetPosition());
-				f_out.Write(out_char,::strlen(out_char));
-				sprintf(out_char,"\t %x\t %x\t %d",bit_data[count],tmp_data,count);
-				f_out.Write(out_char,::strlen(out_char));
-				f_out.Write("\r\n",2);
-			}
-			count++;
-			f_in.Read(&tmp_data,2);
-			if((f_in.GetPosition()%(f_in.GetLength()/100))==0)
-			{
-				m_Progress.StepIt();
-				//			Sleep(0.1);
-			}
-			if((tmp_data&0x01ff)!=(bit_data[count]&0x01ff))
-			{
-				err++;
-				sprintf(out_char,"1\t %d",f_in.GetPosition());
-				f_out.Write(out_char,::strlen(out_char));
-				sprintf(out_char,"\t %x\t %x\t %d",bit_data[count],tmp_data,count);
-				f_out.Write(out_char,::strlen(out_char));
-				f_out.Write("\r\n",2);
+				f_in.Read(&tmp_data,2);
+				if((f_in.GetPosition()%(f_in.GetLength()/100))==0)
+				{
+					m_Progress.StepIt();
+					//			Sleep(0.1);
+				}
+				if((tmp_data&0x01ff)!=(bit_data[count]&0x01ff))
+				{
+					err++;
+					sprintf(out_char,"1\t %d",f_in.GetPosition());
+					f_out.Write(out_char,::strlen(out_char));
+					sprintf(out_char,"\t %x\t %x\t %d",bit_data[count],tmp_data&0x0000ffff,count);
+					f_out.Write(out_char,::strlen(out_char));
+					f_out.Write("\r\n",2);
+				}
+			bit_data[count]=unsigned int(tmp_data&0x0000ffff);
 			}
 		}
-		else if((tmp_data&0x01ff)!=(bit_data[count]&0x01ff))
+		/*else if((tmp_data&0x01ff)!=(bit_data[count]&0x01ff))
 		{
-			err++;
-			sprintf(out_char,"1\t %d",f_in.GetPosition());
-			f_out.Write(out_char,::strlen(out_char));
-			sprintf(out_char,"\t %x\t %x\t %d",bit_data[count],tmp_data,count);
-			f_out.Write(out_char,::strlen(out_char));
-			f_out.Write("\r\n",2);
+		err++;
+		sprintf(out_char,"1\t %d",f_in.GetPosition());
+		f_out.Write(out_char,::strlen(out_char));
+		sprintf(out_char,"\t %x\t %x\t %d",bit_data[count],tmp_data,count);
+		f_out.Write(out_char,::strlen(out_char));
+		f_out.Write("\r\n",2);
 		}
 		bit_data[count]=tmp_data;
-		count++;
+		count++;*/
 	}
 	message.Format(_T("error %d!"),err);
 	AfxMessageBox(message);

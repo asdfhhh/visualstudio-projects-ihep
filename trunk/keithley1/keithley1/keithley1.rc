@@ -48,8 +48,8 @@ BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
     "LANGUAGE 4, 2\r\n"
     "#pragma code_page(936)\r\n"
-    "#include ""res\\keithley1.rc2""  // 非 Microsoft Visual C++ 编辑的资源\r\n"
-    "#include ""afxres.rc""     // 标准组件\r\n"
+    "#include ""res\\keithley1.rc2""  // ·? Microsoft Visual C++ ±à?-μ?×ê?′\r\n"
+    "#include ""afxres.rc""     // ±ê×?×é?t\r\n"
     "#endif\r\n"
     "1 TYPELIB ""keithley1.tlb""\r\n"
     "\0"
@@ -91,7 +91,7 @@ CAPTION "硅探测器漏电流测试"
 FONT 9, "宋体", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "初始化",IDOK,32,159,50,16
-    PUSHBUTTON      "保存并退出",IDCANCEL,236,159,50,16
+    PUSHBUTTON      "退出",IDCANCEL,236,159,50,16
     PUSHBUTTON      "开始测量",IDC_BUTTON1,100,159,50,16
     PUSHBUTTON      "停止测量",IDC_BUTTON2,168,159,50,16
     EDITTEXT        IDC_EDIT2,112,83,152,14,ES_AUTOHSCROLL
@@ -260,6 +260,30 @@ BEGIN
 0x3931, 0x0030, 
     IDC_COMBO2, 0x403, 4, 0
 0x3032, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3132, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3232, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3332, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3432, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3532, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3632, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3732, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3832, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3932, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3033, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3133, 0x0030, 
+    IDC_COMBO2, 0x403, 4, 0
+0x3233, 0x0030, 
     IDC_COMBO3, 0x403, 2, 0
 0x0031, 
     IDC_COMBO3, 0x403, 2, 0
