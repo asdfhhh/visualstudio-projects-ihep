@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Mon Nov 26 17:30:59 2012
+/* at Thu Dec 05 17:03:13 2013
  */
 /* Compiler settings for .\keithley1.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
