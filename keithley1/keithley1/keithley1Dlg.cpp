@@ -515,6 +515,8 @@ UINT WorkThreadProc(LPVOID lParam)
 	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
     }
 	AfxMessageBox(_T("Mesurement complete!"));
+    if(gnu_plot_pipe)_pclose( gnu_plot_pipe);
+
 	delete pData;
 	return 0;
 }
@@ -587,6 +589,7 @@ void Ckeithley1Dlg::OnBnClickedButton2()
 	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
     }
+    if(gnu_plot_pipe)_pclose( gnu_plot_pipe);
 }
 
 void Ckeithley1Dlg::OnEnChangeEdit2()
