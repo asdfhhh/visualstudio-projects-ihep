@@ -1,0 +1,1 @@
+some hardware soft for DAQ or current measurement something based on the Visual Studio
