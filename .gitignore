@@ -25,3 +25,4 @@
 /DSO-VC/Release
 /DSO-VC/ipch
 /DSO-VC/Debug
+*.opendb

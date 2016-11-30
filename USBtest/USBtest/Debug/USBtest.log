@@ -1,0 +1,7 @@
+﻿  stdafx.cpp
+  USBtestDlg.cpp
+  USBtest.cpp
+  Generating Code...
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  USBtest.vcxproj -> C:\Users\henry\Documents\Visual Studio 2015\Projects\USBtest\Debug\USBtest.exe
+  USBtest.vcxproj -> C:\Users\henry\Documents\Visual Studio 2015\Projects\USBtest\Debug\USBtest.pdb (Partial PDB)
