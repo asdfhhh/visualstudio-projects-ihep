@@ -33,4 +33,10 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	// Get USB port Informations
+	int FindEndPoint();
+	afx_msg void OnBnClickedOk();
+	// this is a test function
+	int TestUSB();
 };
