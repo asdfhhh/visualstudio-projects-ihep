@@ -64,6 +64,8 @@ BEGIN_MESSAGE_MAP(CDSOSampleDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDOK, &CDSOSampleDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDCANCEL, &CDSOSampleDlg::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
 
@@ -207,4 +209,47 @@ bool CDSOSampleDlg::InitHardDevice()
 	//Flag
 	m_Hard.m_bStartNormalCollect = TRUE;
 	return false;
+}
+
+
+void CDSOSampleDlg::OnBnClickedOk()
+{
+	// TODO: Add your control notification handler code here
+	//CDialogEx::OnOK();
+	ofstream f_out;
+	f_out.open("MCA.txt");
+
+	if (0 == dsoHTDeviceConnect(m_Hard.m_nDeviceIndex))
+	{
+		//No device Connected
+		AfxMessageBox(_T("No Device!"));
+		return;
+	}
+	else
+	{
+		while (1)
+		{
+			m_Hard.CollectData();
+			if (m_Hard.m_nCollectState == 7 && m_Hard.m_nReadOK == 1)
+			{
+				for (int i = 0; i < m_Hard.m_stControl.nReadDataLen; i++)
+				{
+					short adc = m_Hard.m_CH[0].m_pSrcData[i];
+					f_out << adc << endl;
+				}
+				break;
+			}
+			Sleep(1000);
+		}
+	}
+	AfxMessageBox(_T("Data saved!"));
+	f_out.close();
+}
+
+
+void CDSOSampleDlg::OnBnClickedCancel()
+{
+	// TODO: Add your control notification handler code here
+	int nReturn = dsoHMSetFanControlState(m_Hard.m_nDeviceIndex, 0);	//1:Open  0:Close
+	CDialogEx::OnCancel();
 }

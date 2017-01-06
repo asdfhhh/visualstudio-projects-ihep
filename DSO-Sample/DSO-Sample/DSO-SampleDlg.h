@@ -4,7 +4,9 @@
 
 #pragma once
 #include "Hard.h"
-
+#include <iostream>
+#include <fstream>
+using namespace std;
 // CDSOSampleDlg dialog
 class CDSOSampleDlg : public CDialogEx
 {
@@ -34,4 +36,6 @@ protected:
 public:
 	// initial the DSO hardware
 	bool InitHardDevice();
+	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedCancel();
 };
