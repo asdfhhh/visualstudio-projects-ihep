@@ -6,6 +6,8 @@
 #include "Hard.h"
 #include <iostream>
 #include <fstream>
+#include "Viewer.h"
+
 using namespace std;
 // CDSOSampleDlg dialog
 class CDSOSampleDlg : public CDialogEx
@@ -14,7 +16,7 @@ class CDSOSampleDlg : public CDialogEx
 public:
 	CDSOSampleDlg(CWnd* pParent = NULL);	// standard constructor
 	CHard m_Hard;
-
+	Viewer *rootv;
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_DSOSAMPLE_DIALOG };

@@ -53,6 +53,7 @@ CDSOSampleDlg::CDSOSampleDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DSOSAMPLE_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	rootv = new Viewer(this);
 }
 
 void CDSOSampleDlg::DoDataExchange(CDataExchange* pDX)
@@ -216,6 +217,14 @@ void CDSOSampleDlg::OnBnClickedOk()
 {
 	// TODO: Add your control notification handler code here
 	//CDialogEx::OnOK();
+	//open ROOT viewer
+	if (rootv->GetSafeHwnd() == NULL)
+	{
+		rootv->Create(MAKEINTRESOURCE(IDD_DIALOG1),this);
+	}
+	//else AfxMessageBox(_T("监视界面已经打开！"));
+	rootv->ShowWindow(SW_SHOW);
+	//
 	ofstream f_out;
 	f_out.open("MCA.txt");
 

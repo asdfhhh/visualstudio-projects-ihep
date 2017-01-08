@@ -24,6 +24,12 @@ CDSOSampleApp::CDSOSampleApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
+	int argc = 1;
+	char *argv[1] = { "suca" };
+	gMyRootApp = new TApplication("My ROOT Application", &argc, argv);
+
+	// tell application to return from run
+	gMyRootApp->SetReturnFromRun(true);
 }
 
 

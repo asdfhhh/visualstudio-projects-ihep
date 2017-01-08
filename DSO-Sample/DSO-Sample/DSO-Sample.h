@@ -9,6 +9,8 @@
 #endif
 
 #include "resource.h"		// main symbols
+#include <Windows4Root.h>
+#include "TApplication.h"
 
 
 // CDSOSampleApp:
@@ -23,7 +25,7 @@ public:
 // Overrides
 public:
 	virtual BOOL InitInstance();
-
+	TApplication * gMyRootApp;
 // Implementation
 
 	DECLARE_MESSAGE_MAP()
