@@ -6,6 +6,7 @@
 #include "Viewer.h"
 #include "afxdialogex.h"
 #include "TFrame.h"
+#include "TAxis.h"
 // Viewer dialog
 
 IMPLEMENT_DYNAMIC(Viewer, CDialogEx)
@@ -76,7 +77,18 @@ void Viewer::OnTimer(UINT nIDEvent)
 {
 	CDialog::OnTimer(nIDEvent);
 	if (fCanvas)fCanvas->Clear();
-	if (drawing)drawing->Draw();
+	if (drawing)
+	{
+		drawing->Draw("A");
+		drawing->GetXaxis()->SetTitle("X title");
+		drawing->GetXaxis()->SetAxisColor(18);
+		drawing->GetXaxis()->SetTitleColor(18);
+		drawing->GetXaxis()->SetLabelColor(18);
+		drawing->GetYaxis()->SetTitle("Y title");
+		drawing->GetYaxis()->SetAxisColor(18);
+		drawing->GetYaxis()->SetTitleColor(18);
+		drawing->GetYaxis()->SetLabelColor(18);
+	}
 	if (fCanvas)fCanvas->Update();
 	/*gApplication->StartIdleing();
 	gSystem->InnerLoop();

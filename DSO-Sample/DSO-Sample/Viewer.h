@@ -1,6 +1,7 @@
 #pragma once
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "TMultiGraph.h"
 #include "TGraph.h"
 // Viewer dialog
 
@@ -21,12 +22,12 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	afx_msg void OnTimer(UINT);
 	TCanvas * fCanvas;
-	TGraph*drawing;
+	TMultiGraph*drawing;
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL Create(LPCTSTR lpszTemplateName, CWnd* pParentWnd = NULL);
 	virtual BOOL OnInitDialog();
-	inline void GetGraph(TGraph* s_wave) {
+	inline void GetGraph(TMultiGraph* s_wave) {
 		drawing = s_wave;
 	};
 	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);

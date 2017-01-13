@@ -261,14 +261,16 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			int nBin = m_Hard->m_stControl.nReadDataLen;
 			double* t_axis = new double[nBin];
-			double* v_axis = new double[nBin];
+			double* v_axis1 = new double[nBin];
+			double* v_axis2 = new double[nBin];
 			for (int i = 0; i < m_Hard->m_stControl.nReadDataLen; i++)
 			{
-				short adc = m_Hard->m_CH[0].m_pSrcData[i];
+				
 				t_axis[i] = i;
-				v_axis[i] = adc;
+				v_axis1[i] = m_Hard->m_CH[0].m_pSrcData[i];
+				v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i];
 			}
-			gf->SetTGraph(nBin, t_axis, v_axis);
+			gf->SetTGraph(nBin, t_axis, v_axis1, v_axis2);
 			rootv->GetGraph(gf->MakeTGraph());
 		}
 	}
