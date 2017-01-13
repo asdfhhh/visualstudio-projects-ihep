@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include "Viewer.h"
+#include "DrawGraph.h"
 
 using namespace std;
 // CDSOSampleDlg dialog
@@ -15,8 +16,10 @@ class CDSOSampleDlg : public CDialogEx
 // Construction
 public:
 	CDSOSampleDlg(CWnd* pParent = NULL);	// standard constructor
-	CHard m_Hard;
+	//CHard m_Hard;//this must be replace by a pointer, or will lead a stack overflow error in TFile.
+	CHard *m_Hard;
 	Viewer *rootv;
+	DrawGraph*gf;
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_DSOSAMPLE_DIALOG };
@@ -40,4 +43,7 @@ public:
 	bool InitHardDevice();
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	bool runflag;
+	virtual BOOL DestroyWindow();
 };

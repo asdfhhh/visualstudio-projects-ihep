@@ -6,7 +6,8 @@
 #include "DSO-Sample.h"
 #include "DSO-SampleDlg.h"
 #include "afxdialogex.h"
-
+#include "TFile.h"
+#include "TGraph.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -51,9 +52,12 @@ END_MESSAGE_MAP()
 
 CDSOSampleDlg::CDSOSampleDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DSOSAMPLE_DIALOG, pParent)
+	, runflag(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	rootv = new Viewer(this);
+	m_Hard = new CHard();
+	gf = new DrawGraph();
 }
 
 void CDSOSampleDlg::DoDataExchange(CDataExchange* pDX)
@@ -67,6 +71,7 @@ BEGIN_MESSAGE_MAP(CDSOSampleDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, &CDSOSampleDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CDSOSampleDlg::OnBnClickedCancel)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -102,7 +107,7 @@ BOOL CDSOSampleDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	if (0 == dsoHTDeviceConnect(m_Hard.m_nDeviceIndex))
+	if (0 == dsoHTDeviceConnect(m_Hard->m_nDeviceIndex))
 	{
 		//No device Connected
 		AfxMessageBox(_T("No Device!"));
@@ -112,6 +117,7 @@ BOOL CDSOSampleDlg::OnInitDialog()
 		//Need to Obtain detail Information and Initial device State
 		InitHardDevice();
 	}
+	SetTimer(1, 1, NULL);//set the data collection timer
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -172,43 +178,43 @@ bool CDSOSampleDlg::InitHardDevice()
 	USHORT nReturn;
 	//After Powering on device, you must do this.
 	//Reset Device
-	nReturn = dsoHMResetDevice(m_Hard.m_nDeviceIndex);
+	nReturn = dsoHMResetDevice(m_Hard->m_nDeviceIndex);
 	//Get FPGA Version
-	m_Hard.m_nFPGAVersion = dsoGetFPGAVersion(m_Hard.m_nDeviceIndex);
+	m_Hard->m_nFPGAVersion = dsoGetFPGAVersion(m_Hard->m_nDeviceIndex);
 	//Get Self Calibration Result
-	dsoHTReadCalibrationData(m_Hard.m_nDeviceIndex, m_Hard.m_nCalLevel, CAL_LEVEL_LEN);
+	dsoHTReadCalibrationData(m_Hard->m_nDeviceIndex, m_Hard->m_nCalLevel, CAL_LEVEL_LEN);
 	//Get Amplitude Correction calibration Result
-	nReturn = dsoHMReadAmpCorrectData(m_Hard.m_nDeviceIndex, m_Hard.m_fAmpCorrect, MAX_CH_NUM*MAX_VOLTDIV_NUM*CAL_CHANNEL_MODEL);
+	nReturn = dsoHMReadAmpCorrectData(m_Hard->m_nDeviceIndex, m_Hard->m_fAmpCorrect, MAX_CH_NUM*MAX_VOLTDIV_NUM*CAL_CHANNEL_MODEL);
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 
 	//Start Bus Trigger(Reserved)
-	nReturn = dsoSetUSBBus(m_Hard.m_nDeviceIndex);
+	nReturn = dsoSetUSBBus(m_Hard->m_nDeviceIndex);
 	//Start Fan
-	nReturn = dsoHMSetFanControlState(m_Hard.m_nDeviceIndex, 1);	//1:Open  0:Close
+	nReturn = dsoHMSetFanControlState(m_Hard->m_nDeviceIndex, 1);	//1:Open  0:Close
 																	//Set AD Clock Work Type
-	nReturn = dsoHMSetADClockType(m_Hard.m_nDeviceIndex, &m_Hard.m_stControl, &m_Hard.m_stRelayControl);
+	nReturn = dsoHMSetADClockType(m_Hard->m_nDeviceIndex, &m_Hard->m_stControl, &m_Hard->m_stRelayControl);
 	//Set Sampling Rate
-	nReturn = dsoHMSetSampleRate(m_Hard.m_nDeviceIndex, m_Hard.m_stControl.nTimeDIV, &m_Hard.m_stRelayControl);
+	nReturn = dsoHMSetSampleRate(m_Hard->m_nDeviceIndex, m_Hard->m_stControl.nTimeDIV, &m_Hard->m_stRelayControl);
 	//Set Buffer Size
-	nReturn = dsoHMSetBufferSize(m_Hard.m_nDeviceIndex, &m_Hard.m_stControl);
+	nReturn = dsoHMSetBufferSize(m_Hard->m_nDeviceIndex, &m_Hard->m_stControl);
 	//Set Trigger Control and Sync Control
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	Sleep(1);
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	//Close Peak Detect Sampling Mode
-	nReturn = dsoHMClosePeakDetect(m_Hard.m_nDeviceIndex);
+	nReturn = dsoHMClosePeakDetect(m_Hard->m_nDeviceIndex);
 	//Set Channel and Trigger Souce
-	m_Hard.SetCHAndTrigger(m_Hard.m_stRelayControl);
+	m_Hard->SetCHAndTrigger(m_Hard->m_stRelayControl);
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//Set Channel Swith Type
-	dsoHMSetChannelSwitch(m_Hard.m_nDeviceIndex, &m_Hard.m_stRelayControl);
+	dsoHMSetChannelSwitch(m_Hard->m_nDeviceIndex, &m_Hard->m_stRelayControl);
 	//Set Amplitude Correction Ratio
-	m_Hard.SetAmpCorrectRatio();
+	m_Hard->SetAmpCorrectRatio();
 
 	//Flag
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 	return false;
 }
 
@@ -225,40 +231,55 @@ void CDSOSampleDlg::OnBnClickedOk()
 	//else AfxMessageBox(_T("监视界面已经打开！"));
 	rootv->ShowWindow(SW_SHOW);
 	//
-	ofstream f_out;
-	f_out.open("MCA.txt");
-
-	if (0 == dsoHTDeviceConnect(m_Hard.m_nDeviceIndex))
+	if (0 == dsoHTDeviceConnect(m_Hard->m_nDeviceIndex))
 	{
 		//No device Connected
 		AfxMessageBox(_T("No Device!"));
 		return;
 	}
-	else
-	{
-		while (1)
-		{
-			m_Hard.CollectData();
-			if (m_Hard.m_nCollectState == 7 && m_Hard.m_nReadOK == 1)
-			{
-				for (int i = 0; i < m_Hard.m_stControl.nReadDataLen; i++)
-				{
-					short adc = m_Hard.m_CH[0].m_pSrcData[i];
-					f_out << adc << endl;
-				}
-				break;
-			}
-			Sleep(1000);
-		}
-	}
-	AfxMessageBox(_T("Data saved!"));
-	f_out.close();
+	runflag = true;
 }
 
 
 void CDSOSampleDlg::OnBnClickedCancel()
 {
 	// TODO: Add your control notification handler code here
-	int nReturn = dsoHMSetFanControlState(m_Hard.m_nDeviceIndex, 0);	//1:Open  0:Close
+	int nReturn = dsoHMSetFanControlState(m_Hard->m_nDeviceIndex, 0);	//1:Open  0:Close
 	CDialogEx::OnCancel();
+}
+
+
+void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CDialogEx::OnTimer(nIDEvent);
+	if (runflag)
+	{
+		m_Hard->CollectData();
+		if (m_Hard->m_nCollectState == 7 && m_Hard->m_nReadOK == 1)
+		{
+			int nBin = m_Hard->m_stControl.nReadDataLen;
+			double* t_axis = new double[nBin];
+			double* v_axis = new double[nBin];
+			for (int i = 0; i < m_Hard->m_stControl.nReadDataLen; i++)
+			{
+				short adc = m_Hard->m_CH[0].m_pSrcData[i];
+				t_axis[i] = i;
+				v_axis[i] = adc;
+			}
+			gf->SetTGraph(nBin, t_axis, v_axis);
+			rootv->GetGraph(gf->MakeTGraph());
+		}
+	}
+}
+
+
+BOOL CDSOSampleDlg::DestroyWindow()
+{
+	// TODO: Add your specialized code here and/or call the base class
+	if (rootv)delete rootv;
+	if (m_Hard)delete m_Hard;
+	if (gf)delete gf;
+	return CDialogEx::DestroyWindow();
 }

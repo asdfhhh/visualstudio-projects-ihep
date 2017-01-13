@@ -19,7 +19,8 @@
 #ifndef _AFX_NO_AFXCMN_SUPPORT
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
-
+#include "Windows4Root.h"
+#include "TFile.h"
 #include <math.h>
 
 //Import HeadFile
@@ -27,6 +28,7 @@
 #include "HTSoftDll.h"
 #include "HTDisplayDll.h"
 #include "HTHardDll.h"
+
 
 //Import Lib
 #pragma comment(lib,"HTSoftDll.lib")

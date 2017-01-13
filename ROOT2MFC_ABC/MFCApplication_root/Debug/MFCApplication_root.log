@@ -1,0 +1,48 @@
+﻿  viewer.cpp
+c:\root_v5.34.36\include\tstring.h(505): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(508): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(526): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(537): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(545): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tpad.h(326): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(327): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(328): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(384): warning C4800: 'TVirtualViewer3D *const ': forcing value to bool 'true' or 'false' (performance warning)
+  MFCApplication_rootDlg.cpp
+c:\root_v5.34.36\include\tstring.h(505): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(508): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(526): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(537): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(545): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tpad.h(326): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(327): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(328): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(384): warning C4800: 'TVirtualViewer3D *const ': forcing value to bool 'true' or 'false' (performance warning)
+  MFCApplication_root.cpp
+c:\root_v5.34.36\include\tstring.h(505): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(508): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(526): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(537): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tstring.h(545): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\root_v5.34.36\include\tpad.h(326): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(327): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(328): warning C4800: 'Int_t': forcing value to bool 'true' or 'false' (performance warning)
+c:\root_v5.34.36\include\tpad.h(384): warning C4800: 'TVirtualViewer3D *const ': forcing value to bool 'true' or 'false' (performance warning)
+  Generating Code...
+  MFCApplication_root.vcxproj -> C:\Users\henry\Documents\Visual Studio 2015\Projects\ROOT2MFC_ABC\Debug\MFCApplication_root.exe
+  MFCApplication_root.vcxproj -> C:\Users\henry\Documents\Visual Studio 2015\Projects\ROOT2MFC_ABC\Debug\MFCApplication_root.pdb (Full PDB)

@@ -22,7 +22,8 @@ class CVCDlg : public CDialog
 {
 //Attributes
 public:
-	CHard m_Hard;
+	//CHard m_Hard;//这里生成对象会导致 TFile 栈溢出(Stack overflow)错误.
+	CHard*m_Hard;
 	BOOL m_bRunStop;	//TRUE:Run  FALSE:Stop
 
 	//Memory Drawing

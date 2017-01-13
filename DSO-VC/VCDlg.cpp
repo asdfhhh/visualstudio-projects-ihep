@@ -5,11 +5,8 @@
 #include "VC.h"
 #include "VCDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
@@ -68,6 +65,9 @@ CVCDlg::CVCDlg(CWnd* pParent /*=NULL*/)
 	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	mca_flag=false;
+	m_Hard = new CHard();
+	TFile*f = new TFile("test.root", "NEW");
+	//TH1F*h = new TH1F("test", "test", 200, 0, 200);
 }
 
 void CVCDlg::DoDataExchange(CDataExchange* pDX)
@@ -145,7 +145,7 @@ BOOL CVCDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 
 	InitVariables();
-	if(0 == dsoHTDeviceConnect(m_Hard.m_nDeviceIndex))
+	if(0 == dsoHTDeviceConnect(m_Hard->m_nDeviceIndex))
 	{
 		//No device Connected
 		AfxMessageBox(_T("No Device!"));
@@ -232,7 +232,7 @@ void CVCDlg::OnCancel()
 
 void CVCDlg::InitVariables()
 {
-	m_Hard.m_nDeviceIndex = 0;
+	m_Hard->m_nDeviceIndex = 0;
 	m_bRunStop = TRUE;
 }
 
@@ -241,43 +241,43 @@ void CVCDlg::InitHardDevice()
 	USHORT nReturn;
 	//After Powering on device, you must do this.
 	//Reset Device
-	nReturn = dsoHMResetDevice(m_Hard.m_nDeviceIndex);		
+	nReturn = dsoHMResetDevice(m_Hard->m_nDeviceIndex);		
 	//Get FPGA Version
-	m_Hard.m_nFPGAVersion = dsoGetFPGAVersion(m_Hard.m_nDeviceIndex);
+	m_Hard->m_nFPGAVersion = dsoGetFPGAVersion(m_Hard->m_nDeviceIndex);
 	//Get Self Calibration Result
-	dsoHTReadCalibrationData(m_Hard.m_nDeviceIndex,m_Hard.m_nCalLevel,CAL_LEVEL_LEN);	
+	dsoHTReadCalibrationData(m_Hard->m_nDeviceIndex,m_Hard->m_nCalLevel,CAL_LEVEL_LEN);	
 	//Get Amplitude Correction calibration Result
-	nReturn = dsoHMReadAmpCorrectData(m_Hard.m_nDeviceIndex,m_Hard.m_fAmpCorrect,MAX_CH_NUM*MAX_VOLTDIV_NUM*CAL_CHANNEL_MODEL);	
+	nReturn = dsoHMReadAmpCorrectData(m_Hard->m_nDeviceIndex,m_Hard->m_fAmpCorrect,MAX_CH_NUM*MAX_VOLTDIV_NUM*CAL_CHANNEL_MODEL);	
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 
 	//Start Bus Trigger(Reserved)
-	nReturn = dsoSetUSBBus(m_Hard.m_nDeviceIndex);		
+	nReturn = dsoSetUSBBus(m_Hard->m_nDeviceIndex);		
 	//Start Fan
-	nReturn = dsoHMSetFanControlState(m_Hard.m_nDeviceIndex,1);	//1:Open  0:Close
+	nReturn = dsoHMSetFanControlState(m_Hard->m_nDeviceIndex,1);	//1:Open  0:Close
 	//Set AD Clock Work Type
-	nReturn = dsoHMSetADClockType(m_Hard.m_nDeviceIndex,&m_Hard.m_stControl,&m_Hard.m_stRelayControl);
+	nReturn = dsoHMSetADClockType(m_Hard->m_nDeviceIndex,&m_Hard->m_stControl,&m_Hard->m_stRelayControl);
 	//Set Sampling Rate
-	nReturn = dsoHMSetSampleRate(m_Hard.m_nDeviceIndex,m_Hard.m_stControl.nTimeDIV,&m_Hard.m_stRelayControl);
+	nReturn = dsoHMSetSampleRate(m_Hard->m_nDeviceIndex,m_Hard->m_stControl.nTimeDIV,&m_Hard->m_stRelayControl);
 	//Set Buffer Size
-	nReturn = dsoHMSetBufferSize(m_Hard.m_nDeviceIndex,&m_Hard.m_stControl);
+	nReturn = dsoHMSetBufferSize(m_Hard->m_nDeviceIndex,&m_Hard->m_stControl);
 	//Set Trigger Control and Sync Control
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	Sleep(1);
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	//Close Peak Detect Sampling Mode
-	nReturn = dsoHMClosePeakDetect(m_Hard.m_nDeviceIndex);
+	nReturn = dsoHMClosePeakDetect(m_Hard->m_nDeviceIndex);
 	//Set Channel and Trigger Souce
-	m_Hard.SetCHAndTrigger(m_Hard.m_stRelayControl);
+	m_Hard->SetCHAndTrigger(m_Hard->m_stRelayControl);
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//Set Channel Swith Type
-	dsoHMSetChannelSwitch(m_Hard.m_nDeviceIndex,&m_Hard.m_stRelayControl);
+	dsoHMSetChannelSwitch(m_Hard->m_nDeviceIndex,&m_Hard->m_stRelayControl);
 	//Set Amplitude Correction Ratio
-	m_Hard.SetAmpCorrectRatio();
+	m_Hard->SetAmpCorrectRatio();
 
 	//Flag
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 
 }
 
@@ -285,7 +285,7 @@ void CVCDlg::OnTimer(UINT nIDEvent)
 {
 	// TODO: Add your message handler code here and/or call default
 
-	if(0 == dsoHTDeviceConnect(m_Hard.m_nDeviceIndex))
+	if(0 == dsoHTDeviceConnect(m_Hard->m_nDeviceIndex))
 	{
 		KillTimer(0);
 		//No device Connected
@@ -294,8 +294,8 @@ void CVCDlg::OnTimer(UINT nIDEvent)
 	}
 	else
 	{
-		m_Hard.CollectData();
-		if(m_Hard.m_nCollectState == 7 && m_Hard.m_nReadOK == 1)
+		m_Hard->CollectData();
+		if(m_Hard->m_nCollectState == 7 && m_Hard->m_nReadOK == 1)
 		{
 			//Draw Wave
 			DrawWave(&m_dcMemory,m_rcMemory);
@@ -303,7 +303,7 @@ void CVCDlg::OnTimer(UINT nIDEvent)
 			CDC *pDC = m_MainPanel.GetDC();
 			pDC->BitBlt(m_rcMemory.left,m_rcMemory.top,m_rcMemory.Width(),m_rcMemory.Height(),&m_dcMemory,0,0,SRCCOPY);
 
-			if(m_Hard.m_Trigger.m_nSweep == TRIG_SINGLE)
+			if(m_Hard->m_Trigger.m_nSweep == TRIG_SINGLE)
 			{
 				//Single Trigger needs stopping collecting
 
@@ -314,9 +314,9 @@ void CVCDlg::OnTimer(UINT nIDEvent)
 			if(mca_flag)
 			{
 				int max=0;
-				for(int i=0;i<m_Hard.m_stControl.nReadDataLen;i++)
+				for(int i=0;i<m_Hard->m_stControl.nReadDataLen;i++)
 				{
-					short adc= m_Hard.m_CH[0].m_pSrcData[i];
+					short adc= m_Hard->m_CH[0].m_pSrcData[i];
 					max=(adc>max)?adc:max;
 				}
 				if(max>0)mca[max]++;
@@ -335,7 +335,7 @@ void CVCDlg::DrawWave(CDC* pDC,CRect Rect)
 	//Draw CH
 	for(int i=0;i<MAX_CH_NUM;i++)
 	{
-		if(m_Hard.m_CH[i].m_bOnOff)
+		if(m_Hard->m_CH[i].m_bOnOff)
 		{
 			DrawWaveInYT(pDC,Rect,i);
 		}
@@ -345,12 +345,12 @@ void CVCDlg::DrawWave(CDC* pDC,CRect Rect)
 
 void CVCDlg::DrawWaveInYT(CDC* pDC,CRect Rect,USHORT nCH)
 {
-	short* pData = m_Hard.m_CH[nCH].m_pSrcData;							//源数据
-	ULONG nDisDataLen = m_Hard.m_CH[nCH].m_nDrawDataLen;				//网格内要画的数据长度
-	ULONG nSrcDataLen = m_Hard.m_CH[nCH].m_nSrcDataLen;					//源数据的长度
-	USHORT nLeverPos = m_Hard.m_CH[nCH].m_nLeverPos;					//零电平的显示位置
-	COLORREF clrRGB = m_Hard.m_CH[nCH].m_clrRGB;						//颜色
-	USHORT nHTriggerPos = m_Hard.m_nHTriggerPos;						//水平触发点位置
+	short* pData = m_Hard->m_CH[nCH].m_pSrcData;							//源数据
+	ULONG nDisDataLen = m_Hard->m_CH[nCH].m_nDrawDataLen;				//网格内要画的数据长度
+	ULONG nSrcDataLen = m_Hard->m_CH[nCH].m_nSrcDataLen;					//源数据的长度
+	USHORT nLeverPos = m_Hard->m_CH[nCH].m_nLeverPos;					//零电平的显示位置
+	COLORREF clrRGB = m_Hard->m_CH[nCH].m_clrRGB;						//颜色
+	USHORT nHTriggerPos = m_Hard->m_nHTriggerPos;						//水平触发点位置
 	USHORT nYTFormat = 0;   //0:YT
 	USHORT nDisType = 0;	//0:Line  1::Dot
 
@@ -461,22 +461,22 @@ void CVCDlg::InitControls()
 void CVCDlg::UpdateCtrls()
 {
 	CString str;
-	m_cboTimebase.SetCurSel(m_Hard.m_stControl.nTimeDIV);
-	m_cboCH.SetCurSel(m_Hard.m_nCurCH);
-	m_chkChEnable.SetCheck(m_Hard.m_CH[m_Hard.m_nCurCH].m_bOnOff);
-	m_cboChVolt.SetCurSel(m_Hard.m_CH[m_Hard.m_nCurCH].m_nVoltDIV);
-	m_cboChCouple.SetCurSel(m_Hard.m_CH[m_Hard.m_nCurCH].m_nCoupling);
-	str.Format(_T("%d"),m_Hard.m_CH[m_Hard.m_nCurCH].m_nLeverPos);
+	m_cboTimebase.SetCurSel(m_Hard->m_stControl.nTimeDIV);
+	m_cboCH.SetCurSel(m_Hard->m_nCurCH);
+	m_chkChEnable.SetCheck(m_Hard->m_CH[m_Hard->m_nCurCH].m_bOnOff);
+	m_cboChVolt.SetCurSel(m_Hard->m_CH[m_Hard->m_nCurCH].m_nVoltDIV);
+	m_cboChCouple.SetCurSel(m_Hard->m_CH[m_Hard->m_nCurCH].m_nCoupling);
+	str.Format(_T("%d"),m_Hard->m_CH[m_Hard->m_nCurCH].m_nLeverPos);
 	m_editChLevel.SetWindowText(str);
 	if(m_bRunStop)
 	{
 		m_btnRunStop.SetWindowText(_T("Stop"));
 	}
-	m_cboTrigSrc.SetCurSel(m_Hard.m_Trigger.m_nSource);
-	m_cboTrigSweep.SetCurSel(m_Hard.m_Trigger.m_nSweep);
-	m_cboTrigSlope.SetCurSel(m_Hard.m_Trigger.m_nSlope);
-	m_cboTrigCouple.SetCurSel(m_Hard.m_Trigger.m_nCoupling);
-	str.Format(_T("%d"),m_Hard.m_Trigger.m_nLeverPos[m_Hard.m_Trigger.m_nSource]);
+	m_cboTrigSrc.SetCurSel(m_Hard->m_Trigger.m_nSource);
+	m_cboTrigSweep.SetCurSel(m_Hard->m_Trigger.m_nSweep);
+	m_cboTrigSlope.SetCurSel(m_Hard->m_Trigger.m_nSlope);
+	m_cboTrigCouple.SetCurSel(m_Hard->m_Trigger.m_nCoupling);
+	str.Format(_T("%d"),m_Hard->m_Trigger.m_nLeverPos[m_Hard->m_Trigger.m_nSource]);
 	m_editTrigLevel.SetWindowText(str);
 }
 
@@ -505,17 +505,17 @@ void CVCDlg::OnSelchangeCboTimebase()
 	USHORT nReturn;
 	int nTimeDiv = m_cboTimebase.GetCurSel();
 	//Change Set
-	m_Hard.m_stControl.nTimeDIV = nTimeDiv;
+	m_Hard->m_stControl.nTimeDIV = nTimeDiv;
 	//Set Sampling Rate
-	nReturn = dsoHMSetSampleRate(m_Hard.m_nDeviceIndex,m_Hard.m_stControl.nTimeDIV,&m_Hard.m_stRelayControl);
+	nReturn = dsoHMSetSampleRate(m_Hard->m_nDeviceIndex,m_Hard->m_stControl.nTimeDIV,&m_Hard->m_stRelayControl);
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 }
 
 void CVCDlg::OnSelchangeCboCh() 
 {
 	// TODO: Add your control notification handler code here
-	m_Hard.m_nCurCH = m_cboCH.GetCurSel();
+	m_Hard->m_nCurCH = m_cboCH.GetCurSel();
 	UpdateCtrls();
 }
 
@@ -525,66 +525,66 @@ void CVCDlg::OnChkChEnable()
 	int nReturn;
 	int nChk = m_chkChEnable.GetCheck();
 	//Change available
-	m_Hard.m_CH[m_Hard.m_nCurCH].m_bOnOff = nChk;
-	m_Hard.m_stRelayControl.bCHEnable[m_Hard.m_nCurCH] = nChk;
-	m_Hard.m_stControl.nCHSet = 0;
+	m_Hard->m_CH[m_Hard->m_nCurCH].m_bOnOff = nChk;
+	m_Hard->m_stRelayControl.bCHEnable[m_Hard->m_nCurCH] = nChk;
+	m_Hard->m_stControl.nCHSet = 0;
 	for(int i=0;i<MAX_CH_NUM;i++)
 	{
 		USHORT n = 0;
-		if(m_Hard.m_CH[i].m_bOnOff)
+		if(m_Hard->m_CH[i].m_bOnOff)
 		{
 			n = (USHORT)pow(2.,i);
 		}
-		m_Hard.m_stControl.nCHSet += n;
+		m_Hard->m_stControl.nCHSet += n;
 	}
 	//Set Channel and Trigger Souce
-	m_Hard.SetCHAndTrigger(m_Hard.m_stRelayControl);
+	m_Hard->SetCHAndTrigger(m_Hard->m_stRelayControl);
 	//Set Channel Swith Type
-	dsoHMSetChannelSwitch(m_Hard.m_nDeviceIndex,&m_Hard.m_stRelayControl);
+	dsoHMSetChannelSwitch(m_Hard->m_nDeviceIndex,&m_Hard->m_stRelayControl);
 	//Set Sampling Rate
-	nReturn = dsoHMSetSampleRate(m_Hard.m_nDeviceIndex,m_Hard.m_stControl.nTimeDIV,&m_Hard.m_stRelayControl);
+	nReturn = dsoHMSetSampleRate(m_Hard->m_nDeviceIndex,m_Hard->m_stControl.nTimeDIV,&m_Hard->m_stRelayControl);
 	//Set Buffer Size
-	nReturn = dsoHMSetBufferSize(m_Hard.m_nDeviceIndex,&m_Hard.m_stControl);
+	nReturn = dsoHMSetBufferSize(m_Hard->m_nDeviceIndex,&m_Hard->m_stControl);
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//Set Amplitude Correction Ratio
-	m_Hard.SetAmpCorrectRatio();
+	m_Hard->SetAmpCorrectRatio();
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;	
+	m_Hard->m_bStartNormalCollect = TRUE;	
 }
 
 void CVCDlg::OnSelchangeCboChVolt() 
 {
 	// TODO: Add your control notification handler code here
 	int nSel = m_cboChVolt.GetCurSel();
-	m_Hard.m_CH[m_Hard.m_nCurCH].m_nVoltDIV = nSel;
-	m_Hard.m_stRelayControl.nCHVoltDIV[m_Hard.m_nCurCH] = nSel;
+	m_Hard->m_CH[m_Hard->m_nCurCH].m_nVoltDIV = nSel;
+	m_Hard->m_stRelayControl.nCHVoltDIV[m_Hard->m_nCurCH] = nSel;
 	//Set Channel and Trigger Souce
-	m_Hard.SetCHAndTrigger(m_Hard.m_stRelayControl);
+	m_Hard->SetCHAndTrigger(m_Hard->m_stRelayControl);
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;	
+	m_Hard->m_bStartNormalCollect = TRUE;	
 }
 
 void CVCDlg::OnSelchangeCboChCouple() 
 {
 	// TODO: Add your control notification handler code here
 	int nSel = m_cboChCouple.GetCurSel();
-	m_Hard.m_CH[m_Hard.m_nCurCH].m_nCoupling = nSel;
-	m_Hard.m_stRelayControl.nCHCoupling[m_Hard.m_nCurCH] = nSel;
+	m_Hard->m_CH[m_Hard->m_nCurCH].m_nCoupling = nSel;
+	m_Hard->m_stRelayControl.nCHCoupling[m_Hard->m_nCurCH] = nSel;
 	//Set Channel and Trigger Souce
-	m_Hard.SetCHAndTrigger(m_Hard.m_stRelayControl);
+	m_Hard->SetCHAndTrigger(m_Hard->m_stRelayControl);
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 }
 
 void CVCDlg::OnKillfocusEditChLevel() 
@@ -606,13 +606,13 @@ void CVCDlg::OnKillfocusEditChLevel()
 		str.Format(_T("%d"),nLevel);
 		m_editChLevel.SetWindowText(str);
 	}
-	m_Hard.m_CH[m_Hard.m_nCurCH].m_nLeverPos = nLevel;
+	m_Hard->m_CH[m_Hard->m_nCurCH].m_nLeverPos = nLevel;
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 
 }
 
@@ -620,24 +620,24 @@ void CVCDlg::OnSelchangeCboTrigSrc()
 {
 	// TODO: Add your control notification handler code here
 	int nSel = m_cboTrigSrc.GetCurSel();
-	m_Hard.m_Trigger.m_nSource = nSel;
-	m_Hard.m_stControl.nTriggerSource = nSel;
-	m_Hard.m_stControl.nVTriggerPos = m_Hard.m_Trigger.m_nLeverPos[m_Hard.m_Trigger.m_nSource];
-	m_Hard.m_stRelayControl.nTrigSource = m_Hard.m_Trigger.m_nSource;
+	m_Hard->m_Trigger.m_nSource = nSel;
+	m_Hard->m_stControl.nTriggerSource = nSel;
+	m_Hard->m_stControl.nVTriggerPos = m_Hard->m_Trigger.m_nLeverPos[m_Hard->m_Trigger.m_nSource];
+	m_Hard->m_stRelayControl.nTrigSource = m_Hard->m_Trigger.m_nSource;
 	//Set Channel and Trigger Souce
-	m_Hard.SetCHAndTrigger(m_Hard.m_stRelayControl);
+	m_Hard->SetCHAndTrigger(m_Hard->m_stRelayControl);
 	//Set Trigger Control and Sync Control
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	Sleep(1);
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//Set Amplitude Correction Ratio
-	m_Hard.SetAmpCorrectRatio();
+	m_Hard->SetAmpCorrectRatio();
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 	UpdateCtrls();
 }
 
@@ -646,15 +646,15 @@ void CVCDlg::OnSelchangeCboTrigSlope()
 	// TODO: Add your control notification handler code here
 	// TODO: Add your control notification handler code here
 	int nSel = m_cboTrigSlope.GetCurSel();	
-	m_Hard.m_stControl.nTriggerSlope = nSel;
-	m_Hard.m_Trigger.m_nSlope = nSel;
+	m_Hard->m_stControl.nTriggerSlope = nSel;
+	m_Hard->m_Trigger.m_nSlope = nSel;
 
 	//Set Trigger Control and Sync Control
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	Sleep(1);
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 
 }
 
@@ -664,25 +664,25 @@ void CVCDlg::OnSelchangeCboTrigCouple()
 
 	// TODO: Add your control notification handler code here
 	int nSel = m_cboTrigCouple.GetCurSel();
-	m_Hard.m_Trigger.m_nCoupling= nSel;
+	m_Hard->m_Trigger.m_nCoupling= nSel;
 	//Set Channel and Trigger Souce
-	m_Hard.SetCHAndTrigger(m_Hard.m_stRelayControl);
+	m_Hard->SetCHAndTrigger(m_Hard->m_stRelayControl);
 	//Set Trigger Control and Sync Control
-	m_Hard.SetTriggerAndSyncOutput();
+	m_Hard->SetTriggerAndSyncOutput();
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//Set Amplitude Correction Ratio
-	m_Hard.SetAmpCorrectRatio();
+	m_Hard->SetAmpCorrectRatio();
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 }
 
 void CVCDlg::OnSelchangeCboTrigSweep() 
 {
 	// TODO: Add your control notification handler code here
-	m_Hard.m_Trigger.m_nSweep = m_cboTrigSweep.GetCurSel();
+	m_Hard->m_Trigger.m_nSweep = m_cboTrigSweep.GetCurSel();
 }
 
 void CVCDlg::OnKillfocusEditTrigLevel() 
@@ -704,20 +704,20 @@ void CVCDlg::OnKillfocusEditTrigLevel()
 		str.Format(_T("%d"),nLevel);
 		m_editTrigLevel.SetWindowText(str);
 	}
-	m_Hard.m_Trigger.m_nLeverPos[m_Hard.m_Trigger.m_nSource] = nLevel;
+	m_Hard->m_Trigger.m_nLeverPos[m_Hard->m_Trigger.m_nSource] = nLevel;
 	//Computer Twelve Road DAC Voltage
-	m_Hard.ComputerTwelveRoadVoltage();
+	m_Hard->ComputerTwelveRoadVoltage();
 	//Set Twelve Road DAC Voltage
-	m_Hard.SetDACVoltageforTwelveRoad();
+	m_Hard->SetDACVoltageforTwelveRoad();
 	//
-	m_Hard.m_bStartNormalCollect = TRUE;
+	m_Hard->m_bStartNormalCollect = TRUE;
 }
 
 BOOL CVCDlg::DestroyWindow() 
 {
 	// TODO: Add your specialized code here and/or call the base class
 	//Close Fan
-	int nReturn = dsoHMSetFanControlState(m_Hard.m_nDeviceIndex,0);	//1:Open  0:Close
+	int nReturn = dsoHMSetFanControlState(m_Hard->m_nDeviceIndex,0);	//1:Open  0:Close
 	if(mca_flag)
 	{
 		for(int i=0;i<MCA_CH;i++)f_out<<mca[i]<<"\n";
