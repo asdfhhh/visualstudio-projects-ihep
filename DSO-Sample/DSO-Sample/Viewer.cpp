@@ -15,6 +15,7 @@ Viewer::Viewer(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DIALOG1, pParent)
 {
 	drawing = NULL;
+	fCanvas = NULL;
 }
 
 Viewer::~Viewer()

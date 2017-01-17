@@ -6,9 +6,6 @@
 #include "DSO-Sample.h"
 #include "DSO-SampleDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
 
 
 // CDSOSampleApp

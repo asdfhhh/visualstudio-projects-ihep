@@ -28,5 +28,22 @@ public:
 	TGraph *Wave2;
 private:
 	bool firstrun;
+public:
+	inline bool SetChOn(int Ch_n, bool On_flag)
+	{
+		if (Ch_n == 0)
+		{
+			Ch1_Flag = On_flag;
+			return true;
+		}
+		else if (Ch_n == 1)
+		{
+			Ch2_Flag = On_flag;
+			return true;
+		}
+		return false;
+	}
+	bool Ch1_Flag;
+	bool Ch2_Flag;
 };
 
