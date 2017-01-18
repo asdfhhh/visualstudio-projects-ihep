@@ -32,13 +32,13 @@ TMultiGraph* DrawGraph::MakeTGraph()
 	if (Ch1_Flag)
 	{
 		Wave1 = new TGraph(NGraph, XGraph, YGraph1);
-		Wave1->SetLineColor(5);	
+		Wave1->SetLineColor(CH1_COL);
 		mg->Add(Wave1);
 	}
 	if (Ch2_Flag)
 	{
 		Wave2 = new TGraph(NGraph, XGraph, YGraph2);
-		Wave2->SetLineColor(4);
+		Wave2->SetLineColor(CH2_COL);
 		mg->Add(Wave2);
 	}
 	return mg;

@@ -53,8 +53,10 @@ END_MESSAGE_MAP()
 CDSOSampleDlg::CDSOSampleDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DSOSAMPLE_DIALOG, pParent)
 	, runflag(false)
+	, Ch1_offset(0)
+	, Ch2_offset(0)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON_LPDA);
 	rootv = new Viewer(this);
 	m_Hard = new CHard();
 	gf = new DrawGraph();
@@ -72,7 +74,8 @@ void CDSOSampleDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_Tri_Source, m_cboTrigSrc);
 	DDX_Control(pDX, IDC_Tri_Slope, m_cboTrigSlope);
 	DDX_Control(pDX, IDC_Tri_Couple, m_cboTrigCouple);
-
+	DDX_Control(pDX, IDC_V_Position, m_cslChPosition);
+	DDX_Control(pDX, IDC_Tri_Level, m_cslTriPosition);
 
 }
 
@@ -92,6 +95,8 @@ BEGIN_MESSAGE_MAP(CDSOSampleDlg, CDialogEx)
 	ON_CBN_SELCHANGE(IDC_Tri_Source, &CDSOSampleDlg::OnCbnSelchangeTriSource)
 	ON_CBN_SELCHANGE(IDC_Tri_Slope, &CDSOSampleDlg::OnCbnSelchangeTriSlope)
 	ON_CBN_SELCHANGE(IDC_Tri_Couple, &CDSOSampleDlg::OnCbnSelchangeTriCouple)
+	ON_WM_HSCROLL()
+	ON_WM_VSCROLL()
 END_MESSAGE_MAP()
 
 
@@ -289,8 +294,8 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 			{
 				
 				t_axis[i] = i;
-				v_axis1[i] = m_Hard->m_CH[0].m_pSrcData[i];
-				v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i];
+				v_axis1[i] = m_Hard->m_CH[0].m_pSrcData[i]+Ch1_offset;
+				v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i]+Ch2_offset;
 			}
 			gf->SetTGraph(nBin, t_axis, v_axis1, v_axis2);
 			rootv->GetGraph(gf->MakeTGraph());
@@ -310,7 +315,6 @@ BOOL CDSOSampleDlg::DestroyWindow()
 
 void CDSOSampleDlg::OnCbnSelchangeVDiv()
 {
-	// TODO: Add your control notification handler code here
 	// TODO: Add your control notification handler code here
 	int nSel = m_cboChVolt.GetCurSel();
 	m_Hard->m_CH[m_Hard->m_nCurCH].m_nVoltDIV = nSel;
@@ -408,6 +412,12 @@ void CDSOSampleDlg::InitControls()
 	m_cboTrigSweep.AddString(_T("Normal"));
 	m_cboTrigSweep.AddString(_T("Single"));
 	m_cboTrigSweep.SetCurSel(0);
+
+	m_cslChPosition.SetRange(-255, 255);
+	m_cslChPosition.SetTicFreq(1);
+
+	m_cslTriPosition.SetRange(0, 255);
+	m_cslTriPosition.SetTicFreq(1);
 }
 
 
@@ -436,8 +446,8 @@ void CDSOSampleDlg::UpdateCtrls()
 	m_chkChEnable.SetCheck(m_Hard->m_CH[m_Hard->m_nCurCH].m_bOnOff);
 	m_cboChVolt.SetCurSel(m_Hard->m_CH[m_Hard->m_nCurCH].m_nVoltDIV);
 	m_cboChCouple.SetCurSel(m_Hard->m_CH[m_Hard->m_nCurCH].m_nCoupling);
-	str.Format(_T("%d"), m_Hard->m_CH[m_Hard->m_nCurCH].m_nLeverPos);
-	/*m_editChLevel.SetWindowText(str);
+	/*str.Format(_T("%d"), m_Hard->m_CH[m_Hard->m_nCurCH].m_nLeverPos);
+	m_editChLevel.SetWindowText(str);
 	if (m_bRunStop)
 	{
 		m_btnRunStop.SetWindowText(_T("Stop"));
@@ -448,6 +458,21 @@ void CDSOSampleDlg::UpdateCtrls()
 	m_cboTrigCouple.SetCurSel(m_Hard->m_Trigger.m_nCoupling);
 	//str.Format(_T("%d"), m_Hard->m_Trigger.m_nLeverPos[m_Hard->m_Trigger.m_nSource]);
 	//m_editTrigLevel.SetWindowText(str);
+	//Drawing the trigger
+	CSliderCtrl   *pSlidCtrl = (CSliderCtrl*)GetDlgItem(IDC_Tri_Level);
+	int nLevel = m_Hard->m_Trigger.m_nLeverPos[m_Hard->m_Trigger.m_nSource];
+	pSlidCtrl->SetPos(nLevel);
+	//Computer Twelve Road DAC Voltage
+	m_Hard->ComputerTwelveRoadVoltage();
+	//Set Twelve Road DAC Voltage
+	m_Hard->SetDACVoltageforTwelveRoad();
+	//
+	m_Hard->m_bStartNormalCollect = TRUE;
+	CString position_str;
+	position_str.Format(L"%d", nLevel);
+	GetDlgItem(IDC_Tri_Level_S)->SetWindowText(position_str);
+	rootv->MakeTriLine(m_Hard->m_Trigger.m_nSource, nLevel);
+
 }
 
 
@@ -580,4 +605,53 @@ void CDSOSampleDlg::OnCbnSelchangeTriCouple()
 	//
 	m_Hard->m_bStartNormalCollect = TRUE;
 
+}
+
+
+void CDSOSampleDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	// TODO: Add your message handler code here and/or call default
+
+		CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+
+void CDSOSampleDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	// TODO: Add your message handler code here and/or call default
+	CWnd *pSliderVPos = this->GetDlgItem(IDC_V_Position);
+	CWnd *pSliderTri = this->GetDlgItem(IDC_Tri_Level);
+	if (pScrollBar == pSliderVPos)
+	{
+		CSliderCtrl   *pSlidCtrl = (CSliderCtrl*)GetDlgItem(IDC_V_Position);
+		int nLevel = pSlidCtrl->GetPos();//取得当前位置值  
+		if (m_Hard->m_nCurCH == 0) { Ch1_offset = nLevel; }
+		else if (m_Hard->m_nCurCH == 1) { Ch2_offset = nLevel; }
+		/*//Computer Twelve Road DAC Voltage
+		m_Hard->ComputerTwelveRoadVoltage();
+		//Set Twelve Road DAC Voltage
+		m_Hard->SetDACVoltageforTwelveRoad();
+		//
+		m_Hard->m_bStartNormalCollect = TRUE;*/
+		CString position_str;
+		position_str.Format(L"%d", nLevel);
+		GetDlgItem(IDC_V_Position_S)->SetWindowText(position_str);
+	}
+	if (pScrollBar==pSliderTri)
+	{
+		CSliderCtrl   *pSlidCtrl = (CSliderCtrl*)GetDlgItem(IDC_Tri_Level);
+		int nLevel = pSlidCtrl->GetPos();//取得当前位置值  
+		m_Hard->m_Trigger.m_nLeverPos[m_Hard->m_Trigger.m_nSource] = nLevel;
+		//Computer Twelve Road DAC Voltage
+		m_Hard->ComputerTwelveRoadVoltage();
+		//Set Twelve Road DAC Voltage
+		m_Hard->SetDACVoltageforTwelveRoad();
+		//
+		m_Hard->m_bStartNormalCollect = TRUE;
+		CString position_str;
+		position_str.Format(L"%d", nLevel);
+		GetDlgItem(IDC_Tri_Level_S)->SetWindowText(position_str);
+		rootv->MakeTriLine(m_Hard->m_Trigger.m_nSource, nLevel);
+	}
+	CDialogEx::OnVScroll(nSBCode, nPos, pScrollBar);
 }

@@ -16,6 +16,7 @@ Viewer::Viewer(CWnd* pParent /*=NULL*/)
 {
 	drawing = NULL;
 	fCanvas = NULL;
+	trigger = NULL;
 }
 
 Viewer::~Viewer()
@@ -89,6 +90,7 @@ void Viewer::OnTimer(UINT nIDEvent)
 		drawing->GetYaxis()->SetAxisColor(18);
 		drawing->GetYaxis()->SetTitleColor(18);
 		drawing->GetYaxis()->SetLabelColor(18);
+		if(trigger)trigger->Draw();
 	}
 	if (fCanvas)fCanvas->Update();
 	/*gApplication->StartIdleing();
@@ -109,4 +111,22 @@ void Viewer::OnSizing(UINT fwSide, LPRECT pRect)
 	int wid = gVirtualX->AddWindow((ULong_t)m_hWnd, width, height);
 	fCanvas->SetWindowSize(width, height);
 	fCanvas->Resize();
+}
+
+
+bool Viewer::MakeTriLine(int Ch_n, double level)
+{
+	if (drawing)
+	{
+		/*drawing->GetXaxis()->GetXmin()
+		drawing->GetXaxis()->GetXmax()*/
+		trigger = new TLine(0, level, 10240, level);
+		if(!Ch_n)trigger->SetLineColor(CH1_COL);
+		else if (Ch_n==1)trigger->SetLineColor(CH2_COL);
+		else return false;
+		trigger->SetLineStyle(4);
+		trigger->SetLineWidth(2);
+		return true;
+	}
+	return false;
 }

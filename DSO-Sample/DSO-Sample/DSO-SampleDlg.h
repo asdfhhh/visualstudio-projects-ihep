@@ -53,6 +53,8 @@ public:
 	CButton	m_chkChEnable;
 	CComboBox m_cboTrigSlope;
 	CComboBox m_cboTrigCouple;
+	CSliderCtrl m_cslChPosition;
+	CSliderCtrl m_cslTriPosition;
 	bool runflag;
 	virtual BOOL DestroyWindow();
 	afx_msg void OnCbnSelchangeVDiv();
@@ -66,4 +68,10 @@ public:
 	afx_msg void OnCbnSelchangeTriSource();
 	afx_msg void OnCbnSelchangeTriSlope();
 	afx_msg void OnCbnSelchangeTriCouple();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	// channel 1 offset, for position tune
+	int Ch1_offset;
+	// channel 2 offset, for position tune
+	int Ch2_offset;
 };

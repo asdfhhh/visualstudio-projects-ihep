@@ -44,6 +44,7 @@ void CChannel::GetSrcData(USHORT *pData, ULONG nDataLen)
 	ULONG i;
 	for(i=0;i<nDataLen;i++)
 	{
-		*(m_pSrcData+i) = (short)(pData[i] - (MAX_DATA - m_nLeverPos));
+		//*(m_pSrcData+i) = (short)(pData[i] - (MAX_DATA - m_nLeverPos));
+		*(m_pSrcData + i) = (short)(pData[i]);
 	}
 }

@@ -1,7 +1,5 @@
 ﻿  Generating code
-  0 of 298 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  All 298 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
-  DSO-Sample.vcxproj -> C:\Users\henry\Documents\Visual Studio 2015\Projects\DSO-Sample\Release\DSO-Sample.exe
-  DSO-Sample.vcxproj -> C:\Users\henry\Documents\Visual Studio 2015\Projects\DSO-Sample\Release\DSO-Sample.pdb (Full PDB)
+  DSO-Sample.vcxproj -> D:\DSO-Sample\Release\DSO-Sample.exe
+  DSO-Sample.vcxproj -> D:\DSO-Sample\Release\DSO-Sample.pdb (Full PDB)

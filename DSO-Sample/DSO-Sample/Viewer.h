@@ -3,6 +3,7 @@
 #include "TStyle.h"
 #include "TMultiGraph.h"
 #include "TGraph.h"
+#include "TLine.h"
 // Viewer dialog
 
 class Viewer : public CDialogEx
@@ -23,6 +24,7 @@ protected:
 	afx_msg void OnTimer(UINT);
 	TCanvas * fCanvas;
 	TMultiGraph*drawing;
+	TLine*trigger;
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL Create(LPCTSTR lpszTemplateName, CWnd* pParentWnd = NULL);
@@ -31,4 +33,5 @@ public:
 		drawing = s_wave;
 	};
 	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);
+	bool MakeTriLine(int Ch_n, double level);
 };

@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by VC.rc
 //
 #define IDM_ABOUTBOX                    0x0010
@@ -21,6 +21,7 @@
 #define IDC_EDIT_CH_LEVEL               1012
 #define IDC_EDIT_TRIG_LEVEL             1013
 #define IDC_BUTTON1                     1014
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

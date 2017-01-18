@@ -96,7 +96,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;C:\root_v5.34.36\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libCore.lib;libGpad.lib;libRIO.lib;libHist.lib</AdditionalDependencies>
+      <AdditionalDependencies>libCore.lib;libGpad.lib;libRIO.lib;libHist.lib;libGraf.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -145,7 +145,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;C:\root_v5.34.36\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libCore.lib;libGpad.lib;libRIO.lib;libHist.lib</AdditionalDependencies>
+      <AdditionalDependencies>libCore.lib;libGpad.lib;libRIO.lib;libHist.lib;libGraf.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -223,7 +223,12 @@
     <None Include="res\DSOSample.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="icon1.ico" />
+    <Image Include="icon2.ico" />
+    <Image Include="LPDA.bmp" />
     <Image Include="res\DSO-Sample.ico" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="white_folder_burn.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
