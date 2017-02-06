@@ -17,3 +17,13 @@
 /DSO-VC/ipch
 /DSO-VC/Debug
 *.opendb
+*.exe
+*.ilk
+*.pdb
+*.tlog
+*.obj
+*.log
+*.pch
+*.res
+*.idb
+*.ipch
