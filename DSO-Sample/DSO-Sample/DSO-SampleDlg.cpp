@@ -31,8 +31,6 @@ protected:
 // Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnStnClickedStaticPic();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -45,7 +43,6 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
-	ON_STN_CLICKED(IDC_STATIC_PIC, &CAboutDlg::OnStnClickedStaticPic)
 END_MESSAGE_MAP()
 
 
@@ -136,20 +133,8 @@ BOOL CDSOSampleDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	if (0 == dsoHTDeviceConnect(m_Hard->m_nDeviceIndex))
-	{
-		//No device Connected
-		AfxMessageBox(_T("No Device!"));
-	}
-	else
-	{
-		//Need to Obtain detail Information and Initial device State
-		InitHardDevice();
-	}
 	InitControls();
 	UpdateCtrls();
-	SetTimer(1, 5, NULL);//set the data collection timer
-	SetTimer(2, 10, NULL);//set the Drawing timer
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -255,21 +240,44 @@ void CDSOSampleDlg::OnBnClickedOk()
 {
 	// TODO: Add your control notification handler code here
 	//CDialogEx::OnOK();
-	//open ROOT viewer
-	if (rootv->GetSafeHwnd() == NULL)
+	if (!runflag)
 	{
-		rootv->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+		if (0 == dsoHTDeviceConnect(m_Hard->m_nDeviceIndex))
+		{
+			//No device Connected
+			AfxMessageBox(_T("No Device!"));
+		}
+		else
+		{
+			//Need to Obtain detail Information and Initial device State
+			InitHardDevice();
+		}
+		SetTimer(1, 5, NULL);//set the data collection timer
+		SetTimer(2, 10, NULL);//set the Drawing timer
+		//open ROOT viewer
+		if (rootv->GetSafeHwnd() == NULL)
+		{
+			rootv->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+		}
+		//else AfxMessageBox(_T("监视界面已经打开！"));
+		rootv->ShowWindow(SW_SHOW);
+		//
+		if (0 == dsoHTDeviceConnect(m_Hard->m_nDeviceIndex))
+		{
+			//No device Connected
+			AfxMessageBox(_T("No Device!"));
+			return;
+		}
+		GetDlgItem(IDOK)->SetWindowText(_T("Stop"));
+		runflag = true;
 	}
-	//else AfxMessageBox(_T("监视界面已经打开！"));
-	rootv->ShowWindow(SW_SHOW);
-	//
-	if (0 == dsoHTDeviceConnect(m_Hard->m_nDeviceIndex))
+	else
 	{
-		//No device Connected
-		AfxMessageBox(_T("No Device!"));
-		return;
+		int nReturn = dsoHMSetFanControlState(m_Hard->m_nDeviceIndex, 0);	//1:Open  0:Close
+		GetDlgItem(IDOK)->SetWindowText(_T("Run"));
+		runflag = false;
 	}
-	runflag = true;
+
 }
 
 
@@ -669,22 +677,6 @@ void CDSOSampleDlg::ShowTrigger()
 	position_str.Format(L"%d", nLevel);
 	GetDlgItem(IDC_Tri_Level_S)->SetWindowText(position_str);
 	rootv->MakeTriLine(m_Hard->m_Trigger.m_nSource, nLevel);
-}
-
-
-void CAboutDlg::OnStnClickedStaticPic()
-{
-	// TODO: Add your control notification handler code here
-	//从资源中加载图片
-	CBitmap bitmap;
-	//加载指定位图资源 Bmp图片ID
-	bitmap.LoadBitmap(IDB_BITMAP1);
-	//获取对话框上的句柄 图片控件ID
-	CStatic *p = (CStatic *)GetDlgItem(IDC_STATIC_PIC);
-	//设置静态控件窗口风格为位图居中显示
-	p->ModifyStyle(0xf, SS_BITMAP | SS_CENTERIMAGE);
-	//将图片设置到Picture控件上
-	p->SetBitmap(bitmap);
 }
 
 
