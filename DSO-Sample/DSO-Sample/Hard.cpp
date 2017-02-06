@@ -66,9 +66,9 @@ void CHard::Init()
 	}
 	#else
 	{
-		m_CH[CH1].m_nLeverPos = 190;
+		m_CH[CH1].m_nLeverPos = MID_DATA;
 		m_CH[CH1].m_clrRGB = RGB(255,255,0);
-		m_CH[CH2].m_nLeverPos = 180;
+		m_CH[CH2].m_nLeverPos = MID_DATA+10;
 		m_CH[CH2].m_clrRGB = RGB(0,255,255);
 	}
 	#endif
@@ -77,7 +77,7 @@ void CHard::Init()
 	for(i=0;i<MAX_CH_NUM;i++)
 	{
 		m_Trigger.m_nLeverPos[i] = m_CH[i].m_nLeverPos;
-		m_Trigger.m_nTriggerLevel[i] = 0;
+		m_Trigger.m_nTriggerLevel[i] = MID_DATA;
 	}
 
 	m_nTimeDIV = 12;
@@ -242,7 +242,7 @@ void CHard::ComputerTwelveRoadVoltage()
 	USHORT nTriggerCoupling = DC;
 	USHORT nDisplayPos = 0;
 	USHORT nMid = 0;
-	nPos = m_Trigger.m_nLeverPos[m_Trigger.m_nSource];
+	nPos = MAX_DATA-m_Trigger.m_nLeverPos[m_Trigger.m_nSource];
 
 	nCH = m_Trigger.m_nSource;
 	nTriggerCoupling = m_Trigger.m_nCoupling;
