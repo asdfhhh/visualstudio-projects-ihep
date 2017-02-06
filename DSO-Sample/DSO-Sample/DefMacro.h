@@ -58,7 +58,7 @@
 #define MAX_SF_T_TIMEDIV			(MAX_INSERT_TIMEDIV - 4)
 
 //color Def
-#define CH1_COL 5
+#define CH1_COL 2
 #define CH2_COL 4
 
 

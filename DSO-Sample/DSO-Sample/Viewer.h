@@ -21,7 +21,7 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	afx_msg void OnTimer(UINT);
+//	afx_msg void OnTimer(UINT);
 	TCanvas * fCanvas;
 	TMultiGraph*drawing;
 	TLine*trigger;
@@ -34,4 +34,5 @@ public:
 	};
 	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);
 	bool MakeTriLine(int Ch_n, double level);
+	void Drawing();
 };

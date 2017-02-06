@@ -74,4 +74,5 @@ public:
 	int Ch1_offset;
 	// channel 2 offset, for position tune
 	int Ch2_offset;
+	void ShowTrigger();
 };

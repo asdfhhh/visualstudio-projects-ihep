@@ -30,7 +30,7 @@ void Viewer::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(Viewer, CDialogEx)
-	ON_WM_TIMER()
+//	ON_WM_TIMER()
 	ON_WM_SIZING()
 END_MESSAGE_MAP()
 
@@ -58,7 +58,7 @@ BOOL Viewer::OnInitDialog()
 		int height = rect.bottom - rect.top;
 		int wid = gVirtualX->AddWindow((ULong_t)m_hWnd, width, height);
 		fCanvas = new TCanvas("fCanvas", width, height, wid);
-		fCanvas->SetFillColor(1);
+		//fCanvas->SetFillColor(1);
 		fCanvas->SetGrid();
 		//fCanvas->GetFrame()->SetFillColor(1);
 		/*fCanvas->SetBorderMode(0);
@@ -75,28 +75,28 @@ BOOL Viewer::OnInitDialog()
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void Viewer::OnTimer(UINT nIDEvent)
-{
-	CDialog::OnTimer(nIDEvent);
-	if (fCanvas)fCanvas->Clear();
-	if (drawing)
-	{
-		drawing->Draw("A");
-		drawing->GetXaxis()->SetTitle("X title");
-		drawing->GetXaxis()->SetAxisColor(18);
-		drawing->GetXaxis()->SetTitleColor(18);
-		drawing->GetXaxis()->SetLabelColor(18);
-		drawing->GetYaxis()->SetTitle("Y title");
-		drawing->GetYaxis()->SetAxisColor(18);
-		drawing->GetYaxis()->SetTitleColor(18);
-		drawing->GetYaxis()->SetLabelColor(18);
-		if(trigger)trigger->Draw();
-	}
-	if (fCanvas)fCanvas->Update();
-	/*gApplication->StartIdleing();
-	gSystem->InnerLoop();
-	gApplication->StopIdleing();*/
-}
+//void Viewer::OnTimer(UINT nIDEvent)
+//{
+//	CDialog::OnTimer(nIDEvent);
+//	if (fCanvas)fCanvas->Clear();
+//	if (drawing)
+//	{
+//		drawing->Draw("A");
+//		drawing->GetXaxis()->SetTitle("X title");
+//		drawing->GetXaxis()->SetAxisColor(18);
+//		drawing->GetXaxis()->SetTitleColor(18);
+//		drawing->GetXaxis()->SetLabelColor(18);
+//		drawing->GetYaxis()->SetTitle("Y title");
+//		drawing->GetYaxis()->SetAxisColor(18);
+//		drawing->GetYaxis()->SetTitleColor(18);
+//		drawing->GetYaxis()->SetLabelColor(18);
+//		if(trigger)trigger->Draw();
+//	}
+//	if (fCanvas)fCanvas->Update();
+//	/*gApplication->StartIdleing();
+//	gSystem->InnerLoop();
+//	gApplication->StopIdleing();*/
+//}
 
 
 void Viewer::OnSizing(UINT fwSide, LPRECT pRect)
@@ -129,4 +129,35 @@ bool Viewer::MakeTriLine(int Ch_n, double level)
 		return true;
 	}
 	return false;
+}
+
+
+void Viewer::Drawing()
+{
+	try
+	{
+		if (fCanvas)
+		{
+			if (drawing)
+			{
+				drawing->Draw("A");
+				/*drawing->GetXaxis()->SetTitle("X title");
+				drawing->GetXaxis()->SetAxisColor(18);
+				drawing->GetXaxis()->SetTitleColor(18);
+				drawing->GetXaxis()->SetLabelColor(18);
+				//drawing->GetXaxis()->SetRangeUser(0, BUF_10K_LEN);
+				drawing->GetYaxis()->SetTitle("Y title");
+				drawing->GetYaxis()->SetAxisColor(18);
+				drawing->GetYaxis()->SetTitleColor(18);
+				drawing->GetYaxis()->SetLabelColor(18);
+				//drawing->GetYaxis()->SetRangeUser(0, MAX_DATA);*/
+				if (trigger)trigger->Draw();
+			}
+			fCanvas->Update();
+		}
+	}
+	catch (TCanvas* cc)
+	{
+		AfxMessageBox(L" catched ");
+	}
 }

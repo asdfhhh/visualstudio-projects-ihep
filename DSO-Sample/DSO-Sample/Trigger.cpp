@@ -30,7 +30,7 @@ void CTrigger::Init()
 	for(i=0;i<MAX_CH_NUM;i++)
 	{
 		m_nLeverPos[i] = MID_DATA;		//Trigger Level in Device
-		m_nTriggerLevel[i] = 0;
+		m_nTriggerLevel[i] = MID_DATA;
 	}
 	m_nMode = EDGE;						//Trigger Mode:Edge
 	m_nSlope = 0;						//Trigger Slope
