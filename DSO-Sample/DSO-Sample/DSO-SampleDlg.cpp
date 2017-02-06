@@ -20,12 +20,12 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg();
 
-// Dialog Data
+	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Implementation
@@ -144,7 +144,8 @@ BOOL CDSOSampleDlg::OnInitDialog()
 	}
 	InitControls();
 	UpdateCtrls();
-	SetTimer(1, 1, NULL);//set the data collection timer
+	SetTimer(1, 5, NULL);//set the data collection timer
+	SetTimer(2, 10, NULL);//set the Drawing timer
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -253,7 +254,7 @@ void CDSOSampleDlg::OnBnClickedOk()
 	//open ROOT viewer
 	if (rootv->GetSafeHwnd() == NULL)
 	{
-		rootv->Create(MAKEINTRESOURCE(IDD_DIALOG1),this);
+		rootv->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
 	}
 	//else AfxMessageBox(_T("监视界面已经打开！"));
 	rootv->ShowWindow(SW_SHOW);
@@ -281,26 +282,38 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 	// TODO: Add your message handler code here and/or call default
 
 	CDialogEx::OnTimer(nIDEvent);
-	if (runflag)
+	switch (nIDEvent)
 	{
-		m_Hard->CollectData();
-		if (m_Hard->m_nCollectState == 7 && m_Hard->m_nReadOK == 1)
+	case 1:
+		if (runflag)
 		{
-			int nBin = m_Hard->m_stControl.nReadDataLen;
-			double* t_axis = new double[nBin];
-			double* v_axis1 = new double[nBin];
-			double* v_axis2 = new double[nBin];
-			for (int i = 0; i < m_Hard->m_stControl.nReadDataLen; i++)
+			m_Hard->CollectData();
+			if (m_Hard->m_nCollectState == 7 && m_Hard->m_nReadOK == 1)
 			{
-				
-				t_axis[i] = i;
-				v_axis1[i] = m_Hard->m_CH[0].m_pSrcData[i];
-				v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i];
+				int nBin = m_Hard->m_stControl.nReadDataLen;
+				double* t_axis = new double[nBin];
+				double* v_axis1 = new double[nBin];
+				double* v_axis2 = new double[nBin];
+				for (int i = 0; i < m_Hard->m_stControl.nReadDataLen; i++)
+				{
+
+					t_axis[i] = i;
+					v_axis1[i] = m_Hard->m_CH[0].m_pSrcData[i];
+					v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i];
+				}
+				gf->SetTGraph(nBin, t_axis, v_axis1, v_axis2);
+				rootv->GetGraph(gf->MakeTGraph());
+				delete t_axis;
+				delete v_axis1;
+				delete v_axis2;
 			}
-			gf->SetTGraph(nBin, t_axis, v_axis1, v_axis2);
-			rootv->GetGraph(gf->MakeTGraph());
-			rootv->Drawing();
-		}
+		};
+		break;
+	case 2:
+		rootv->Drawing();
+		break;
+	default:
+		break;
 	}
 }
 
@@ -362,7 +375,7 @@ void CDSOSampleDlg::InitControls()
 	m_cboTimebase.SetCurSel(12);
 
 	m_cboCH.ResetContent();
-	for (i = 0; i<MAX_CH_NUM; i++)
+	for (i = 0; i < MAX_CH_NUM; i++)
 	{
 		str.Format(_T("CH%d"), i + 1);
 		m_cboCH.AddString(str);
@@ -391,7 +404,7 @@ void CDSOSampleDlg::InitControls()
 	m_cboChCouple.SetCurSel(0);
 
 	m_cboTrigSrc.ResetContent();
-	for (i = 0; i<MAX_CH_NUM; i++)
+	for (i = 0; i < MAX_CH_NUM; i++)
 	{
 		str.Format(_T("CH%d"), i + 1);
 		m_cboTrigSrc.AddString(str);
@@ -475,7 +488,7 @@ void CDSOSampleDlg::OnBnClickedChOn()
 	m_Hard->m_CH[m_Hard->m_nCurCH].m_bOnOff = nChk;
 	m_Hard->m_stRelayControl.bCHEnable[m_Hard->m_nCurCH] = nChk;
 	m_Hard->m_stControl.nCHSet = 0;
-	for (int i = 0; i<MAX_CH_NUM; i++)
+	for (int i = 0; i < MAX_CH_NUM; i++)
 	{
 		USHORT n = 0;
 		if (m_Hard->m_CH[i].m_bOnOff)
@@ -602,7 +615,7 @@ void CDSOSampleDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: Add your message handler code here and/or call default
 
-		CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
+	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
 
@@ -617,7 +630,7 @@ void CDSOSampleDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		int nLevel = pSlidCtrl->GetPos();//取得当前位置值  
 		/*if (m_Hard->m_nCurCH == 0) { Ch1_offset = nLevel; }
 		else if (m_Hard->m_nCurCH == 1) { Ch2_offset = nLevel; }*/
-		
+
 		m_Hard->m_CH[m_Hard->m_nCurCH].m_nLeverPos = nLevel;
 		//Computer Twelve Road DAC Voltage
 		m_Hard->ComputerTwelveRoadVoltage();
@@ -629,7 +642,7 @@ void CDSOSampleDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		position_str.Format(L"%d", nLevel);
 		GetDlgItem(IDC_V_Position_S)->SetWindowText(position_str);
 	}
-	if (pScrollBar==pSliderTri)
+	if (pScrollBar == pSliderTri)
 	{
 		ShowTrigger();
 	}

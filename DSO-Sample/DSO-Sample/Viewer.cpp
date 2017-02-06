@@ -15,12 +15,14 @@ Viewer::Viewer(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DIALOG1, pParent)
 {
 	drawing = NULL;
-	fCanvas = NULL;
+	viewer_canvas = NULL;
 	trigger = NULL;
 }
 
 Viewer::~Viewer()
 {
+	if (viewer_canvas)delete viewer_canvas;
+	if (trigger)delete trigger;
 }
 
 void Viewer::DoDataExchange(CDataExchange* pDX)
@@ -52,14 +54,14 @@ BOOL Viewer::OnInitDialog()
 	//»æÖÆROOT»­²¼
 	RECT rect;	
 
-	if (fCanvas == 0) {
+	if (viewer_canvas == 0) {
 		GetWindowRect(&rect);
 		int width = rect.right - rect.left;
 		int height = rect.bottom - rect.top;
 		int wid = gVirtualX->AddWindow((ULong_t)m_hWnd, width, height);
-		fCanvas = new TCanvas("fCanvas", width, height, wid);
+		viewer_canvas = new TCanvas("fCanvas", width, height, wid);
 		//fCanvas->SetFillColor(1);
-		fCanvas->SetGrid();
+		viewer_canvas->SetGrid();
 		//fCanvas->GetFrame()->SetFillColor(1);
 		/*fCanvas->SetBorderMode(0);
 
@@ -109,20 +111,21 @@ void Viewer::OnSizing(UINT fwSide, LPRECT pRect)
 	int width = rect.right - rect.left;
 	int height = rect.bottom - rect.top;
 	int wid = gVirtualX->AddWindow((ULong_t)m_hWnd, width, height);
-	fCanvas->SetWindowSize(width, height);
-	fCanvas->Resize();
+	viewer_canvas->SetWindowSize(width, height);
+	viewer_canvas->Resize();
 }
 
 
 bool Viewer::MakeTriLine(int Ch_n, double level)
 {
-		trigger = new TLine(0, level, 10240, level);
-		if(!Ch_n)trigger->SetLineColor(CH1_COL);
-		else if (Ch_n==1)trigger->SetLineColor(CH2_COL);
-		else return false;
-		trigger->SetLineStyle(4);
-		trigger->SetLineWidth(2);
-		return true;
+	if (trigger)delete trigger;
+	trigger = new TLine(0, level, 10240, level);
+	if (!Ch_n)trigger->SetLineColor(CH1_COL);
+	else if (Ch_n == 1)trigger->SetLineColor(CH2_COL);
+	else return false;
+	trigger->SetLineStyle(4);
+	trigger->SetLineWidth(2);
+	return true;
 }
 
 
@@ -130,7 +133,7 @@ void Viewer::Drawing()
 {
 	try
 	{
-		if (fCanvas)
+		if (viewer_canvas)
 		{
 			if (drawing)
 			{
@@ -147,7 +150,7 @@ void Viewer::Drawing()
 				//drawing->GetYaxis()->SetRangeUser(0, MAX_DATA);*/
 				if (trigger)trigger->Draw();
 			}
-			fCanvas->Update();
+			viewer_canvas->Update();
 		}
 	}
 	catch (TCanvas* cc)

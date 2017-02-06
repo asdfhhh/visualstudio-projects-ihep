@@ -21,13 +21,13 @@ DrawGraph::DrawGraph()
 
 DrawGraph::~DrawGraph()
 {
-	if (Wave1)delete Wave1;
-	if (Wave2)delete Wave2;
+	if(mg) delete mg;
 }
 
 TMultiGraph* DrawGraph::MakeTGraph()
 {
 	if (!(Ch1_Flag||Ch2_Flag)) return NULL;
+	if(mg) delete mg;
 	mg = new TMultiGraph();
 	if (Ch1_Flag)
 	{

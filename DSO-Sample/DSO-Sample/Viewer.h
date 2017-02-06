@@ -22,7 +22,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 //	afx_msg void OnTimer(UINT);
-	TCanvas * fCanvas;
+	TCanvas * viewer_canvas;
 	TMultiGraph*drawing;
 	TLine*trigger;
 	DECLARE_MESSAGE_MAP()
