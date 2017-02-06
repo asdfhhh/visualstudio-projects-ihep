@@ -116,10 +116,6 @@ void Viewer::OnSizing(UINT fwSide, LPRECT pRect)
 
 bool Viewer::MakeTriLine(int Ch_n, double level)
 {
-	if (drawing)
-	{
-		/*drawing->GetXaxis()->GetXmin()
-		drawing->GetXaxis()->GetXmax()*/
 		trigger = new TLine(0, level, 10240, level);
 		if(!Ch_n)trigger->SetLineColor(CH1_COL);
 		else if (Ch_n==1)trigger->SetLineColor(CH2_COL);
@@ -127,8 +123,6 @@ bool Viewer::MakeTriLine(int Ch_n, double level)
 		trigger->SetLineStyle(4);
 		trigger->SetLineWidth(2);
 		return true;
-	}
-	return false;
 }
 
 

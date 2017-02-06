@@ -421,7 +421,6 @@ void CDSOSampleDlg::InitControls()
 	m_cslTriPosition.SetTicFreq(1);
 	//Drawing the trigger
 	m_cslTriPosition.SetPos(MID_DATA);
-	ShowTrigger();
 }
 
 

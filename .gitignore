@@ -27,3 +27,6 @@
 *.res
 *.idb
 *.ipch
+*.db
+*.suo
+*.aps
