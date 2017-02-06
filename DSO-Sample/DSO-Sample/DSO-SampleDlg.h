@@ -75,4 +75,5 @@ public:
 	// channel 2 offset, for position tune
 	int Ch2_offset;
 	void ShowTrigger();
+	afx_msg void OnBnClickedButtonAbout();
 };

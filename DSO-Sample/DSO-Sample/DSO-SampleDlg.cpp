@@ -31,6 +31,8 @@ protected:
 // Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnStnClickedStaticPic();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -43,6 +45,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	ON_STN_CLICKED(IDC_STATIC_PIC, &CAboutDlg::OnStnClickedStaticPic)
 END_MESSAGE_MAP()
 
 
@@ -95,6 +98,7 @@ BEGIN_MESSAGE_MAP(CDSOSampleDlg, CDialogEx)
 	ON_CBN_SELCHANGE(IDC_Tri_Source, &CDSOSampleDlg::OnCbnSelchangeTriSource)
 	ON_CBN_SELCHANGE(IDC_Tri_Slope, &CDSOSampleDlg::OnCbnSelchangeTriSlope)
 	ON_CBN_SELCHANGE(IDC_Tri_Couple, &CDSOSampleDlg::OnCbnSelchangeTriCouple)
+	ON_BN_CLICKED(IDC_BUTTON_About, &CDSOSampleDlg::OnBnClickedButtonAbout)
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
 END_MESSAGE_MAP()
@@ -665,4 +669,29 @@ void CDSOSampleDlg::ShowTrigger()
 	position_str.Format(L"%d", nLevel);
 	GetDlgItem(IDC_Tri_Level_S)->SetWindowText(position_str);
 	rootv->MakeTriLine(m_Hard->m_Trigger.m_nSource, nLevel);
+}
+
+
+void CAboutDlg::OnStnClickedStaticPic()
+{
+	// TODO: Add your control notification handler code here
+	//从资源中加载图片
+	CBitmap bitmap;
+	//加载指定位图资源 Bmp图片ID
+	bitmap.LoadBitmap(IDB_BITMAP1);
+	//获取对话框上的句柄 图片控件ID
+	CStatic *p = (CStatic *)GetDlgItem(IDC_STATIC_PIC);
+	//设置静态控件窗口风格为位图居中显示
+	p->ModifyStyle(0xf, SS_BITMAP | SS_CENTERIMAGE);
+	//将图片设置到Picture控件上
+	p->SetBitmap(bitmap);
+}
+
+
+void CDSOSampleDlg::OnBnClickedButtonAbout()
+{
+	// TODO: Add your control notification handler code here
+	CAboutDlg AboutDlg;
+	AboutDlg.DoModal();
+
 }
