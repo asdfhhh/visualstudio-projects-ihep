@@ -138,6 +138,7 @@ BOOL CDSOSampleDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	SetTimer(0, 1000, NULL);
 	InitControls();
 	UpdateCtrls();
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -303,6 +304,11 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 	CDialogEx::OnTimer(nIDEvent);
 	switch (nIDEvent)
 	{
+	case 0:
+		time = CTime::GetTickCount();
+		time_str = time.Format("%Y/%m/%d  %H:%M:%S");
+		GetDlgItem(IDC_STATIC_Timer)->SetWindowText(time_str);
+		break;
 	case 1:
 		m_Hard->CollectData();
 		if (m_Hard->m_nCollectState == 7 && m_Hard->m_nReadOK == 1)

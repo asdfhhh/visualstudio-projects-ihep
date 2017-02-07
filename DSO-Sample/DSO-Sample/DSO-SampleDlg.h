@@ -83,4 +83,6 @@ protected:
 	double* t_axis;
 	double* v_axis1;
 	double* v_axis2;
+	CTime time;
+	CString time_str;
 };
