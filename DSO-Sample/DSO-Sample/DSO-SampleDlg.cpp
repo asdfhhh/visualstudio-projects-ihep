@@ -55,11 +55,15 @@ CDSOSampleDlg::CDSOSampleDlg(CWnd* pParent /*=NULL*/)
 	, runflag(false)
 	, Ch1_offset(0)
 	, Ch2_offset(0)
+	, Snap_int(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON_LPDA);
 	rootv = new Viewer(this);
 	m_Hard = new CHard();
 	gf = new DrawGraph();
+	t_axis = NULL;
+	v_axis1 = NULL;
+	v_axis2 = NULL;
 }
 
 void CDSOSampleDlg::DoDataExchange(CDataExchange* pDX)
@@ -98,6 +102,7 @@ BEGIN_MESSAGE_MAP(CDSOSampleDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_About, &CDSOSampleDlg::OnBnClickedButtonAbout)
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
+	ON_BN_CLICKED(IDC_BUTTON_Snap, &CDSOSampleDlg::OnBnClickedButtonSnap)
 END_MESSAGE_MAP()
 
 
@@ -253,11 +258,12 @@ void CDSOSampleDlg::OnBnClickedOk()
 			InitHardDevice();
 		}
 		SetTimer(1, 5, NULL);//set the data collection timer
-		SetTimer(2, 10, NULL);//set the Drawing timer
 		//open ROOT viewer
 		if (rootv->GetSafeHwnd() == NULL)
 		{
+			KillTimer(2);
 			rootv->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+			SetTimer(2, 10, NULL);//set the Drawing timer
 		}
 		//else AfxMessageBox(_T("监视界面已经打开！"));
 		rootv->ShowWindow(SW_SHOW);
@@ -276,6 +282,7 @@ void CDSOSampleDlg::OnBnClickedOk()
 		int nReturn = dsoHMSetFanControlState(m_Hard->m_nDeviceIndex, 0);	//1:Open  0:Close
 		GetDlgItem(IDOK)->SetWindowText(_T("Run"));
 		runflag = false;
+		KillTimer(1);
 	}
 
 }
@@ -297,29 +304,35 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 	switch (nIDEvent)
 	{
 	case 1:
-		if (runflag)
+		m_Hard->CollectData();
+		if (m_Hard->m_nCollectState == 7 && m_Hard->m_nReadOK == 1)
 		{
-			m_Hard->CollectData();
-			if (m_Hard->m_nCollectState == 7 && m_Hard->m_nReadOK == 1)
-			{
-				int nBin = m_Hard->m_stControl.nReadDataLen;
-				double* t_axis = new double[nBin];
-				double* v_axis1 = new double[nBin];
-				double* v_axis2 = new double[nBin];
-				for (int i = 0; i < m_Hard->m_stControl.nReadDataLen; i++)
-				{
 
-					t_axis[i] = i;
-					v_axis1[i] = m_Hard->m_CH[0].m_pSrcData[i];
-					v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i];
-				}
-				gf->SetTGraph(nBin, t_axis, v_axis1, v_axis2);
-				rootv->GetGraph(gf->MakeTGraph());
-				delete t_axis;
-				delete v_axis1;
-				delete v_axis2;
+			int nBin = m_Hard->m_stControl.nReadDataLen;
+			if (t_axis)delete t_axis;
+			if (v_axis1)delete v_axis1;
+			if (v_axis2)delete v_axis2;
+			t_axis = new double[nBin];
+			v_axis1 = new double[nBin];
+			v_axis2 = new double[nBin];
+			for (int i = 0; i < m_Hard->m_stControl.nReadDataLen; i++)
+			{
+
+				t_axis[i] = i;
+				v_axis1[i] = m_Hard->m_CH[0].m_pSrcData[i];
+				v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i];
 			}
-		};
+			gf->SetTGraph(nBin, t_axis, v_axis1, v_axis2);
+			rootv->GetGraph(gf->MakeTGraph());
+			if (m_Hard->m_Trigger.m_nSweep == TRIG_SINGLE)
+			{
+				//Single Trigger needs stopping collecting
+				int nReturn = dsoHMSetFanControlState(m_Hard->m_nDeviceIndex, 0);	//1:Open  0:Close
+				GetDlgItem(IDOK)->SetWindowText(_T("Run"));
+				runflag = false;
+				KillTimer(1);
+			}
+		}
 		break;
 	case 2:
 		rootv->Drawing();
@@ -686,4 +699,19 @@ void CDSOSampleDlg::OnBnClickedButtonAbout()
 	CAboutDlg AboutDlg;
 	AboutDlg.DoModal();
 
+}
+
+
+void CDSOSampleDlg::OnBnClickedButtonSnap()
+{
+	// TODO: Add your control notification handler code here
+	char file_name[50];
+	sprintf(file_name, "Snap_%d.txt", Snap_int);
+	ofstream f(file_name);
+	for (int i = 0; i < m_Hard->m_stControl.nReadDataLen; i++)
+	{
+		f << v_axis1[i] << "\t" << v_axis2[i] << endl;
+	}
+	f.close();
+	Snap_int++;
 }

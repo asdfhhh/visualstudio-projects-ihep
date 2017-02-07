@@ -76,4 +76,11 @@ public:
 	int Ch2_offset;
 	void ShowTrigger();
 	afx_msg void OnBnClickedButtonAbout();
+	afx_msg void OnBnClickedButtonSnap();
+	// Snap shoot number
+	int Snap_int;
+protected:
+	double* t_axis;
+	double* v_axis1;
+	double* v_axis2;
 };
