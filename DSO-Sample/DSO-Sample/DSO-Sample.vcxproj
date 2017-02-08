@@ -189,6 +189,7 @@
   <ItemGroup>
     <ClInclude Include="Channel.h" />
     <ClInclude Include="DAQ_Viewer.h" />
+    <ClInclude Include="DataProcessing.h" />
     <ClInclude Include="DefMacro.h" />
     <ClInclude Include="DrawGraph.h" />
     <ClInclude Include="DSO-Sample.h" />
@@ -207,6 +208,7 @@
   <ItemGroup>
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="DAQ_Viewer.cpp" />
+    <ClCompile Include="DataProcessing.cpp" />
     <ClCompile Include="DrawGraph.cpp" />
     <ClCompile Include="DSO-Sample.cpp" />
     <ClCompile Include="DSO-SampleDlg.cpp" />

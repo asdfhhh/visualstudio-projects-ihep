@@ -14,12 +14,14 @@ IMPLEMENT_DYNAMIC(DAQ_Viewer, CDialogEx)
 DAQ_Viewer::DAQ_Viewer(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DAQ, pParent)
 {
-	viewer_canvas = NULL;
+	daq_canvas = NULL;
 	drawing = NULL;
 }
 
 DAQ_Viewer::~DAQ_Viewer()
 {
+	delete daq_canvas;
+	delete drawing;
 }
 
 void DAQ_Viewer::DoDataExchange(CDataExchange* pDX)
@@ -52,14 +54,14 @@ BOOL DAQ_Viewer::OnInitDialog()
 	//»æÖÆROOT»­²¼
 	RECT rect;
 
-	if (viewer_canvas == 0) {
+	if (daq_canvas == 0) {
 		GetWindowRect(&rect);
 		int width = rect.right - rect.left;
 		int height = rect.bottom - rect.top;
 		int wid = gVirtualX->AddWindow((ULong_t)m_hWnd, width, height);
-		viewer_canvas = new TCanvas("fCanvas", width, height, wid);
+		daq_canvas = new TCanvas("CanvasDAQ", width, height, wid);
 		//fCanvas->SetFillColor(1);
-		viewer_canvas->SetGrid();
+		daq_canvas->SetGrid();
 		//fCanvas->GetFrame()->SetFillColor(1);
 		/*fCanvas->SetBorderMode(0);
 
@@ -84,6 +86,24 @@ void DAQ_Viewer::OnSizing(UINT fwSide, LPRECT pRect)
 	int width = rect.right - rect.left;
 	int height = rect.bottom - rect.top;
 	int wid = gVirtualX->AddWindow((ULong_t)m_hWnd, width, height);
-	viewer_canvas->SetWindowSize(width, height);
-	viewer_canvas->Resize();
+	daq_canvas->SetWindowSize(width, height);
+	daq_canvas->Resize();
+}
+
+
+int DAQ_Viewer::Drawing()
+{
+	daq_canvas->cd();
+	if (drawing)drawing->Draw();
+	daq_canvas->Update();
+	return 0;
+}
+
+
+int DAQ_Viewer::MakeGraph(int nBin, double* Data)
+{
+	if (drawing)delete drawing;
+	drawing = new TH1F("PSDwave", "Wave after PSD", nBin, 0, nBin);
+	for (int i = 0; i < nBin; i++)drawing->Fill(i, Data[i]);
+	return 0;
 }

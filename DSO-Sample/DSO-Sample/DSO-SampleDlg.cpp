@@ -62,6 +62,7 @@ CDSOSampleDlg::CDSOSampleDlg(CWnd* pParent /*=NULL*/)
 	daqv = new DAQ_Viewer(this);
 	m_Hard = new CHard();
 	gf = new DrawGraph();
+	datap = new DataProcessing();
 	t_axis = NULL;
 	v_axis1 = NULL;
 	v_axis2 = NULL;
@@ -265,7 +266,7 @@ void CDSOSampleDlg::OnBnClickedOk()
 		if (rootv->GetSafeHwnd() == NULL)
 		{
 			KillTimer(2);
-			rootv->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+			rootv->Create(MAKEINTRESOURCE(IDD_Viewer), this);
 			SetTimer(2, 10, NULL);//set the Drawing timer
 		}
 		//else AfxMessageBox(_T("监视界面已经打开！"));
@@ -331,6 +332,8 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 				v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i];
 			}
 			gf->SetTGraph(nBin, t_axis, v_axis1, v_axis2);
+			datap->GetData(v_axis1, v_axis2, nBin);
+			datap->BeginThread();
 			rootv->GetGraph(gf->MakeTGraph());
 			if (m_Hard->m_Trigger.m_nSweep == TRIG_SINGLE)
 			{
@@ -346,6 +349,8 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 		rootv->Drawing();
 		break;
 	case 3:
+		daqv->MakeGraph(datap->len, datap->output1);
+		daqv->Drawing();
 		break;
 	default:
 		break;
@@ -360,6 +365,7 @@ BOOL CDSOSampleDlg::DestroyWindow()
 	delete m_Hard;
 	delete gf;
 	delete daqv;
+	delete datap;
 	return CDialogEx::DestroyWindow();
 }
 
@@ -731,11 +737,12 @@ void CDSOSampleDlg::OnBnClickedButtonSnap()
 void CDSOSampleDlg::OnBnClickedButtonDaq()
 {
 	// TODO: Add your control notification handler code here
+
 	//open ROOT viewer
 	if (daqv->GetSafeHwnd() == NULL)
 	{
 		KillTimer(3);
-		daqv->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+		daqv->Create(MAKEINTRESOURCE(IDD_DAQ), this);
 		SetTimer(3, 500, NULL);//set the Drawing timer
 	}
 	//else AfxMessageBox(_T("监视界面已经打开！"));

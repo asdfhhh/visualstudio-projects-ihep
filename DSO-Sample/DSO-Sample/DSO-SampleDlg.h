@@ -9,6 +9,7 @@
 #include "Viewer.h"
 #include "DrawGraph.h"
 #include "DAQ_Viewer.h"
+#include "DataProcessing.h"
 using namespace std;
 // CDSOSampleDlg dialog
 class CDSOSampleDlg : public CDialogEx
@@ -88,4 +89,6 @@ protected:
 	CString time_str;
 public:
 	afx_msg void OnBnClickedButtonDaq();
+	// data Processing
+	DataProcessing* datap;
 };

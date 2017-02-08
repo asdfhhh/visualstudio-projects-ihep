@@ -12,7 +12,7 @@
 IMPLEMENT_DYNAMIC(Viewer, CDialogEx)
 
 Viewer::Viewer(CWnd* pParent /*=NULL*/)
-	: CDialogEx(IDD_DIALOG1, pParent)
+	: CDialogEx(IDD_Viewer, pParent)
 {
 	drawing = NULL;
 	viewer_canvas = NULL;
@@ -59,7 +59,7 @@ BOOL Viewer::OnInitDialog()
 		int width = rect.right - rect.left;
 		int height = rect.bottom - rect.top;
 		int wid = gVirtualX->AddWindow((ULong_t)m_hWnd, width, height);
-		viewer_canvas = new TCanvas("fCanvas", width, height, wid);
+		viewer_canvas = new TCanvas("CavansWave", width, height, wid);
 		//fCanvas->SetFillColor(1);
 		viewer_canvas->SetGrid();
 		//fCanvas->GetFrame()->SetFillColor(1);
@@ -133,6 +133,7 @@ void Viewer::Drawing()
 	{
 		if (viewer_canvas)
 		{
+			viewer_canvas->cd();
 			if (drawing)
 			{
 				drawing->Draw("A");
