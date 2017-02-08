@@ -59,6 +59,7 @@ CDSOSampleDlg::CDSOSampleDlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON_LPDA);
 	rootv = new Viewer(this);
+	daqv = new DAQ_Viewer(this);
 	m_Hard = new CHard();
 	gf = new DrawGraph();
 	t_axis = NULL;
@@ -103,6 +104,7 @@ BEGIN_MESSAGE_MAP(CDSOSampleDlg, CDialogEx)
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
 	ON_BN_CLICKED(IDC_BUTTON_Snap, &CDSOSampleDlg::OnBnClickedButtonSnap)
+	ON_BN_CLICKED(IDC_BUTTON_DAQ, &CDSOSampleDlg::OnBnClickedButtonDaq)
 END_MESSAGE_MAP()
 
 
@@ -343,6 +345,8 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 	case 2:
 		rootv->Drawing();
 		break;
+	case 3:
+		break;
 	default:
 		break;
 	}
@@ -352,9 +356,10 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 BOOL CDSOSampleDlg::DestroyWindow()
 {
 	// TODO: Add your specialized code here and/or call the base class
-	if (rootv)delete rootv;
-	if (m_Hard)delete m_Hard;
-	if (gf)delete gf;
+	delete rootv;
+	delete m_Hard;
+	delete gf;
+	delete daqv;
 	return CDialogEx::DestroyWindow();
 }
 
@@ -720,4 +725,19 @@ void CDSOSampleDlg::OnBnClickedButtonSnap()
 	}
 	f.close();
 	Snap_int++;
+}
+
+
+void CDSOSampleDlg::OnBnClickedButtonDaq()
+{
+	// TODO: Add your control notification handler code here
+	//open ROOT viewer
+	if (daqv->GetSafeHwnd() == NULL)
+	{
+		KillTimer(3);
+		daqv->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+		SetTimer(3, 500, NULL);//set the Drawing timer
+	}
+	//else AfxMessageBox(_T("监视界面已经打开！"));
+	daqv->ShowWindow(SW_SHOW);
 }

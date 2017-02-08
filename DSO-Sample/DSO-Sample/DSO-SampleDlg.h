@@ -8,7 +8,7 @@
 #include <fstream>
 #include "Viewer.h"
 #include "DrawGraph.h"
-
+#include "DAQ_Viewer.h"
 using namespace std;
 // CDSOSampleDlg dialog
 class CDSOSampleDlg : public CDialogEx
@@ -19,6 +19,7 @@ public:
 	//CHard m_Hard;//this must be replace by a pointer, or will lead a stack overflow error in TFile.
 	CHard *m_Hard;
 	Viewer *rootv;
+	DAQ_Viewer *daqv;
 	DrawGraph*gf;
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
@@ -85,4 +86,6 @@ protected:
 	double* v_axis2;
 	CTime time;
 	CString time_str;
+public:
+	afx_msg void OnBnClickedButtonDaq();
 };

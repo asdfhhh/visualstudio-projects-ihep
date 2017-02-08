@@ -71,8 +71,6 @@ BOOL Viewer::OnInitDialog()
 		gStyle->SetFrameFillColor(1);*/
 	}
 	// TODO:  Add extra initialization here
-	SetTimer(1, 10, NULL);//安装定时器，并将其时间间隔设为1000毫秒
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
