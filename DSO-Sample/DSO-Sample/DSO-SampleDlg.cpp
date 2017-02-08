@@ -56,6 +56,7 @@ CDSOSampleDlg::CDSOSampleDlg(CWnd* pParent /*=NULL*/)
 	, Ch1_offset(0)
 	, Ch2_offset(0)
 	, Snap_int(0)
+	, daqflag(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON_LPDA);
 	rootv = new Viewer(this);
@@ -266,7 +267,7 @@ void CDSOSampleDlg::OnBnClickedOk()
 		if (rootv->GetSafeHwnd() == NULL)
 		{
 			KillTimer(2);
-			rootv->Create(MAKEINTRESOURCE(IDD_Viewer), this);
+			rootv->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
 			SetTimer(2, 10, NULL);//set the Drawing timer
 		}
 		//else AfxMessageBox(_T("监视界面已经打开！"));
@@ -287,6 +288,7 @@ void CDSOSampleDlg::OnBnClickedOk()
 		GetDlgItem(IDOK)->SetWindowText(_T("Run"));
 		runflag = false;
 		KillTimer(1);
+		KillTimer(3);
 	}
 
 }
@@ -332,8 +334,11 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 				v_axis2[i] = m_Hard->m_CH[1].m_pSrcData[i];
 			}
 			gf->SetTGraph(nBin, t_axis, v_axis1, v_axis2);
-			datap->GetData(v_axis1, v_axis2, nBin);
-			datap->BeginThread();
+			if (daqflag)
+			{
+				datap->GetData(v_axis1, v_axis2, nBin);
+				datap->BeginThread();
+			}
 			rootv->GetGraph(gf->MakeTGraph());
 			if (m_Hard->m_Trigger.m_nSweep == TRIG_SINGLE)
 			{
@@ -342,6 +347,7 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 				GetDlgItem(IDOK)->SetWindowText(_T("Run"));
 				runflag = false;
 				KillTimer(1);
+				KillTimer(3);
 			}
 		}
 		break;
@@ -349,7 +355,7 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 		rootv->Drawing();
 		break;
 	case 3:
-		daqv->MakeGraph(datap->len, datap->output1);
+		daqv->MakeGraph(datap->len, datap->output1,datap->risingtime1);
 		daqv->Drawing();
 		break;
 	default:
@@ -747,4 +753,5 @@ void CDSOSampleDlg::OnBnClickedButtonDaq()
 	}
 	//else AfxMessageBox(_T("监视界面已经打开！"));
 	daqv->ShowWindow(SW_SHOW);
+	daqflag = true;
 }

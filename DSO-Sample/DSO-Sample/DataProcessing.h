@@ -1,7 +1,7 @@
 #pragma once
 #include "LowPassFilter.h"
 #include "HighPassFilter.h"
-
+#include "RisingTimeCal.h"
 //线程数据结构
 typedef struct ThreadData
 {
@@ -11,6 +11,8 @@ typedef struct ThreadData
 	double* obuf1;
 	double* obuf2;
 	int ilen;
+	double *rt1;
+	double *rt2;
 }THREADDATA;
 
 class DataProcessing
@@ -35,6 +37,8 @@ public:
 	}
 	double* output1;
 	double* output2;
+	double risingtime1;
+	double risingtime2;
 	int Initial();
 };
 

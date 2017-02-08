@@ -12,7 +12,7 @@
 IMPLEMENT_DYNAMIC(Viewer, CDialogEx)
 
 Viewer::Viewer(CWnd* pParent /*=NULL*/)
-	: CDialogEx(IDD_Viewer, pParent)
+	: CDialogEx(IDD_DIALOG1, pParent)
 {
 	drawing = NULL;
 	viewer_canvas = NULL;

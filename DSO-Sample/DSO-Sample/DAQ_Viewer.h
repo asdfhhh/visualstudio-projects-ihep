@@ -27,5 +27,7 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);
 	int Drawing();
-	int MakeGraph(int nBin, double* Data);
+	int MakeGraph(int nBin, double* Data,double time);
+	TH1F* mca;
+	TH1F* risingtime_hist;
 };

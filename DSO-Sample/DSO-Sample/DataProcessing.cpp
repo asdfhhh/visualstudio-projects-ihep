@@ -31,6 +31,8 @@ UINT DataProcessing::BeginThread()
 	pData->obuf2 = output2;
 	pData->ilen = len;
 	pData->cutoff = 0.01;
+	pData->rt1 = &risingtime1;
+	pData->rt2 = &risingtime2;
 	CWinThread* mythread = AfxBeginThread((AFX_THREADPROC)TreadFunction, pData, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 	return 0;
 }
@@ -38,12 +40,16 @@ UINT DataProcessing::BeginThread()
 
 UINT DataProcessing::TreadFunction(LPVOID lParam)
 {
+	//initial
 	THREADDATA* pData = (THREADDATA*)lParam;
 	LowPassFilter*lowp= new LowPassFilter();
 	HighPassFilter*highp = new HighPassFilter();
+	RisingTimeCal* rtcal = new RisingTimeCal(pData->ilen);
 	lowpstuff lowp_p;
 	highpstuff highp_p;
 	lowp_p.cutoff = highp_p.cutoff = pData->cutoff;
+	//ch1
+	//energy
 	lowp->Initial(&lowp_p);
 	highp->Initial(&highp_p);
 	double baseline = 0;
@@ -55,6 +61,12 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 		highp_p.outm1 = highp->Processing(&highp_p, lowp_p.outm1);
 		pData->obuf1[i] = highp_p.outm1;
 	}
+	//rising time
+	rtcal->Initial();
+	rtcal->Processing(pData->ibuf1);
+	*pData->rt1 = rtcal->Calculate();
+	//ch2
+	//energy
 	lowp->Initial(&lowp_p);
 	highp->Initial(&highp_p);
 	baseline = 0;
@@ -67,6 +79,11 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 		highp_p.outm1 = highp->Processing(&highp_p, lowp_p.outm1);
 		pData->obuf2[i] = highp_p.outm1;
 	}
+	//rising time
+	rtcal->Initial();
+	rtcal->Processing(pData->ibuf2);
+	*pData->rt2 = rtcal->Calculate();
+	delete rtcal;
 	delete pData;
 	delete lowp;
 	delete highp;

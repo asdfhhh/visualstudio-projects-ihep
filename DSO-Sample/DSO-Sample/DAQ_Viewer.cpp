@@ -16,12 +16,16 @@ DAQ_Viewer::DAQ_Viewer(CWnd* pParent /*=NULL*/)
 {
 	daq_canvas = NULL;
 	drawing = NULL;
+	mca = new TH1F("mca", "the Energy Spectrum", 500, 0, 2000);
+	risingtime_hist = new TH1F("rtime", "the rising time", 500, 0, 500);
 }
 
 DAQ_Viewer::~DAQ_Viewer()
 {
 	delete daq_canvas;
 	delete drawing;
+	delete mca;
+	delete risingtime_hist;
 }
 
 void DAQ_Viewer::DoDataExchange(CDataExchange* pDX)
@@ -62,6 +66,7 @@ BOOL DAQ_Viewer::OnInitDialog()
 		daq_canvas = new TCanvas("CanvasDAQ", width, height, wid);
 		//fCanvas->SetFillColor(1);
 		daq_canvas->SetGrid();
+		daq_canvas->Divide(2, 2);
 		//fCanvas->GetFrame()->SetFillColor(1);
 		/*fCanvas->SetBorderMode(0);
 
@@ -93,17 +98,23 @@ void DAQ_Viewer::OnSizing(UINT fwSide, LPRECT pRect)
 
 int DAQ_Viewer::Drawing()
 {
-	daq_canvas->cd();
+	daq_canvas->cd(1);
 	if (drawing)drawing->Draw();
+	daq_canvas->cd(2);
+	if (mca)mca->Draw();
+	daq_canvas->cd(3);
+	if (risingtime_hist)risingtime_hist->Draw();
 	daq_canvas->Update();
 	return 0;
 }
 
 
-int DAQ_Viewer::MakeGraph(int nBin, double* Data)
+int DAQ_Viewer::MakeGraph(int nBin, double* Data,double risingtime)
 {
-	if (drawing)delete drawing;
-	drawing = new TH1F("PSDwave", "Wave after PSD", nBin, 0, nBin);
+	if (!drawing)drawing = new TH1F("PSDwave", "Wave after PSD", nBin, 0, nBin);
+	drawing->Reset();
 	for (int i = 0; i < nBin; i++)drawing->Fill(i, Data[i]);
+	mca->Fill(drawing->GetBinContent(drawing->GetMaximumBin()));
+	risingtime_hist->Fill(risingtime);
 	return 0;
 }

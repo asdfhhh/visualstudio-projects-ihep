@@ -91,4 +91,5 @@ public:
 	afx_msg void OnBnClickedButtonDaq();
 	// data Processing
 	DataProcessing* datap;
+	bool daqflag;
 };
