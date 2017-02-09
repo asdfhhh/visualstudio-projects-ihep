@@ -2,6 +2,8 @@
 #include "LowPassFilter.h"
 #include "HighPassFilter.h"
 #include "RisingTimeCal.h"
+#include "MakeDAQGraph.h"
+
 //线程数据结构
 typedef struct ThreadData
 {
@@ -40,5 +42,13 @@ public:
 	double risingtime1;
 	double risingtime2;
 	int Initial();
+	MakeDAQGraph*daqgf;
+	DAQCTRL daq_c;
+	int SetDAQCtrl(DAQCTRL tmp_c)
+	{
+		daq_c = tmp_c;
+		return 0;
+	}
+	int FillHist();
 };
 

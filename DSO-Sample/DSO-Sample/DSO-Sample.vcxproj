@@ -199,6 +199,7 @@
     <ClInclude Include="HTHardDll.h" />
     <ClInclude Include="HTSoftDll.h" />
     <ClInclude Include="LowPassFilter.h" />
+    <ClInclude Include="MakeDAQGraph.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RisingTimeCal.h" />
     <ClInclude Include="stdafx.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="Hard.cpp" />
     <ClCompile Include="HighPassFilter.cpp" />
     <ClCompile Include="LowPassFilter.cpp" />
+    <ClCompile Include="MakeDAQGraph.cpp" />
     <ClCompile Include="RisingTimeCal.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

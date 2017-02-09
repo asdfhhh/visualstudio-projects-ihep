@@ -280,12 +280,15 @@ void CDSOSampleDlg::OnBnClickedOk()
 			return;
 		}
 		GetDlgItem(IDOK)->SetWindowText(_T("Stop"));
+		GetDlgItem(IDC_BUTTON_DAQ)->EnableWindow(TRUE);
 		runflag = true;
 	}
 	else
 	{
 		int nReturn = dsoHMSetFanControlState(m_Hard->m_nDeviceIndex, 0);	//1:Open  0:Close
 		GetDlgItem(IDOK)->SetWindowText(_T("Run"));
+		if (daqflag)OnBnClickedButtonDaq();
+		GetDlgItem(IDC_BUTTON_DAQ)->EnableWindow(FALSE);
 		runflag = false;
 		KillTimer(1);
 		KillTimer(3);
@@ -347,7 +350,6 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 				GetDlgItem(IDOK)->SetWindowText(_T("Run"));
 				runflag = false;
 				KillTimer(1);
-				KillTimer(3);
 			}
 		}
 		break;
@@ -355,7 +357,8 @@ void CDSOSampleDlg::OnTimer(UINT_PTR nIDEvent)
 		rootv->Drawing();
 		break;
 	case 3:
-		daqv->MakeGraph(datap->len, datap->output1,datap->risingtime1);
+		datap->FillHist();
+		daqv->SetHist(datap->daqgf->drawing_con, datap->daqgf->mca_con, datap->daqgf->rt_con, datap->daqgf->scatter_con);
 		daqv->Drawing();
 		break;
 	default:
@@ -482,6 +485,8 @@ void CDSOSampleDlg::InitControls()
 	m_cslTriPosition.SetTicFreq(1);
 	//Drawing the trigger
 	m_cslTriPosition.SetPos(MID_DATA);
+	//disable the DAQ
+	GetDlgItem(IDC_BUTTON_DAQ)->EnableWindow(FALSE);
 }
 
 
@@ -743,15 +748,24 @@ void CDSOSampleDlg::OnBnClickedButtonSnap()
 void CDSOSampleDlg::OnBnClickedButtonDaq()
 {
 	// TODO: Add your control notification handler code here
-
+	if (!daqflag)
+	{
 	//open ROOT viewer
 	if (daqv->GetSafeHwnd() == NULL)
 	{
 		KillTimer(3);
 		daqv->Create(MAKEINTRESOURCE(IDD_DAQ), this);
-		SetTimer(3, 500, NULL);//set the Drawing timer
 	}
-	//else AfxMessageBox(_T("监视界面已经打开！"));
+	GetDlgItem(IDC_BUTTON_DAQ)->SetWindowText(_T("Stop DAQ"));
 	daqv->ShowWindow(SW_SHOW);
+	SetTimer(3, 500, NULL);//set the Drawing timer
 	daqflag = true;
+	}
+	else
+	{
+		KillTimer(3);
+		GetDlgItem(IDC_BUTTON_DAQ)->SetWindowText(_T("Start DAQ"));
+		daqv->Reset();
+		daqflag = false;
+	}
 }

@@ -9,6 +9,11 @@ DataProcessing::DataProcessing()
 	len = 0;
 	Ch1 = NULL;
 	Ch2 = NULL;
+	daqgf = new MakeDAQGraph();
+	daq_c.cutoff = 0.01;
+	daq_c.MCA_MAX = 1000;
+	daq_c.RT_MAX = 10;
+	daqgf->Initial(daq_c);
 }
 
 
@@ -16,6 +21,7 @@ DataProcessing::~DataProcessing()
 {
 	if (output1)delete output1;
 	if (output2)delete output2;
+	if (daqgf)delete daqgf;
 }
 
 
@@ -30,7 +36,7 @@ UINT DataProcessing::BeginThread()
 	pData->obuf1 = output1;
 	pData->obuf2 = output2;
 	pData->ilen = len;
-	pData->cutoff = 0.01;
+	pData->cutoff = daq_c.cutoff;
 	pData->rt1 = &risingtime1;
 	pData->rt2 = &risingtime2;
 	CWinThread* mythread = AfxBeginThread((AFX_THREADPROC)TreadFunction, pData, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
@@ -57,15 +63,22 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 	if(pData->ilen)baseline = baseline / (pData->ilen / 3);
 	for (int i = 0; i < pData->ilen; i++)
 	{
-		lowp_p.outm1=lowp->Processing(&lowp_p, pData->ibuf1[i]-baseline);
-		highp_p.outm1 = highp->Processing(&highp_p, lowp_p.outm1);
+		highp_p.outm1 = highp->Processing(&highp_p, pData->ibuf1[i] - baseline);
+		lowp_p.outm1=lowp->Processing(&lowp_p, highp_p.outm1);
 		pData->obuf1[i] = highp_p.outm1;
+	}
+	for (int ii = 0; ii < 5; ii++)
+	{
+		for (int i = 0; i < pData->ilen; i++)
+		{
+			lowp_p.outm1 = lowp->Processing(&lowp_p, pData->obuf1[i]);
+			pData->obuf1[i] = lowp_p.outm1;
+		}
 	}
 	//rising time
 	rtcal->Initial();
-	rtcal->Processing(pData->ibuf1);
-	*pData->rt1 = rtcal->Calculate();
-	//ch2
+	*pData->rt1 = rtcal->Processing(pData->ibuf1);
+	/*//Ch2
 	//energy
 	lowp->Initial(&lowp_p);
 	highp->Initial(&highp_p);
@@ -82,7 +95,7 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 	//rising time
 	rtcal->Initial();
 	rtcal->Processing(pData->ibuf2);
-	*pData->rt2 = rtcal->Calculate();
+	*pData->rt2 = rtcal->Calculate();*/
 	delete rtcal;
 	delete pData;
 	delete lowp;
@@ -97,5 +110,13 @@ int DataProcessing::Initial()
 	if (output2)delete output2;
 	output1 = new double[len];
 	output2 = new double[len];
+	return 0;
+}
+
+
+
+int DataProcessing::FillHist()
+{
+	daqgf->FillHist(len, output1, risingtime1);
 	return 0;
 }
