@@ -27,6 +27,8 @@ void DAQSetup::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_DAQSetup_Cutoff, m_editCutoff);
 	DDX_Control(pDX, IDC_EDIT_DAQSetup_MCAMax, m_editMcaMax);
 	DDX_Control(pDX, IDC_EDIT_DAQSetup_RTimeMax, m_editRTimemax);
+	DDX_Control(pDX, IDC_CHECK_PSD, m_chkChEnable);
+	DDX_Control(pDX, IDC_CHECK_SAVE, m_chkChSave);
 }
 
 
@@ -35,6 +37,8 @@ BEGIN_MESSAGE_MAP(DAQSetup, CDialogEx)
 	ON_EN_KILLFOCUS(IDC_EDIT_DAQSetup_Cutoff, &DAQSetup::OnKillfocusEditDaqsetupCutoff)
 	ON_EN_KILLFOCUS(IDC_EDIT_DAQSetup_MCAMax, &DAQSetup::OnKillfocusEditDaqsetupMcamax)
 	ON_EN_KILLFOCUS(IDC_EDIT_DAQSetup_RTimeMax, &DAQSetup::OnKillfocusEditDaqsetupRtimemax)
+	ON_BN_CLICKED(IDC_CHECK_SAVE, &DAQSetup::OnBnClickedCheckSave)
+	ON_BN_CLICKED(IDC_CHECK_PSD, &DAQSetup::OnBnClickedCheckPsd)
 END_MESSAGE_MAP()
 
 
@@ -104,6 +108,7 @@ BOOL DAQSetup::Create(DataProcessing*data,LPCTSTR lpszTemplateName, CWnd* pParen
 {
 	// TODO: Add your specialized code here and/or call the base class
 	data_p = data;
+	DAQ_p = data_p->GetDAQCtrl();
 	return CDialogEx::Create(lpszTemplateName, pParentWnd);
 }
 
@@ -113,15 +118,27 @@ BOOL DAQSetup::OnInitDialog()
 	CDialogEx::OnInitDialog();
 	// TODO:  Add extra initialization here
 	CString str;
-	DAQ_p.cutoff = 1;
 	str.Format(_T("%f"), DAQ_p.cutoff);
 	m_editCutoff.SetWindowText(str);
-	DAQ_p.MCA_MAX = 1000;
 	str.Format(_T("%d"), DAQ_p.MCA_MAX);
 	m_editMcaMax.SetWindowText(str);
-	DAQ_p.RT_MAX = 100;
 	str.Format(_T("%d"), DAQ_p.RT_MAX);
 	m_editRTimemax.SetWindowText(str);
+	m_chkChEnable.SetCheck(DAQ_p.PSD_flag);
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+
+void DAQSetup::OnBnClickedCheckSave()
+{
+	// TODO: Add your control notification handler code here
+	DAQ_p.SAVE_flag = m_chkChSave.GetCheck();
+}
+
+
+void DAQSetup::OnBnClickedCheckPsd()
+{
+	// TODO: Add your control notification handler code here
+	DAQ_p.PSD_flag = m_chkChEnable.GetCheck();
 }

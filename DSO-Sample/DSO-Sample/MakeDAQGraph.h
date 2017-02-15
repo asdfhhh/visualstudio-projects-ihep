@@ -1,12 +1,13 @@
 #pragma once
 #include "TH1F.h"
 #include "TH2F.h"
-
 typedef struct DAQControl
 {
 	int MCA_MAX;
 	int RT_MAX;
 	double cutoff;
+	bool PSD_flag;
+	bool SAVE_flag;
 }DAQCTRL;
 class MakeDAQGraph
 {

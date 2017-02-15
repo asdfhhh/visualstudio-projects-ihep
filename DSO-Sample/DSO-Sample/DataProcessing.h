@@ -3,6 +3,8 @@
 #include "HighPassFilter.h"
 #include "RisingTimeCal.h"
 #include "MakeDAQGraph.h"
+#include "TFile.h"
+#include "TTree.h"
 
 //线程数据结构
 typedef struct ThreadData
@@ -15,6 +17,8 @@ typedef struct ThreadData
 	int ilen;
 	double *rt1;
 	double *rt2;
+	bool DSP_flag;
+	TFile*Out_File;
 }THREADDATA;
 
 class DataProcessing
@@ -44,6 +48,8 @@ public:
 	int Initial();
 	MakeDAQGraph*daqgf;
 	DAQCTRL daq_c;
+	TFile*outf;
+	TTree*outTree;
 	int SetDAQCtrl(DAQCTRL tmp_c)
 	{
 		daq_c = tmp_c;
@@ -51,6 +57,11 @@ public:
 		daqgf->Initial(daq_c);
 		return 0;
 	}
+	inline DAQCTRL GetDAQCtrl()
+	{
+		return daq_c;
+	}
 	int FillHist();
+	int Stop();
 };
 

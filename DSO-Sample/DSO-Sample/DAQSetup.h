@@ -29,5 +29,9 @@ public:
 	afx_msg void OnKillfocusEditDaqsetupRtimemax();
 	virtual BOOL Create(DataProcessing*data,LPCTSTR lpszTemplateName, CWnd* pParentWnd = NULL);
 	virtual BOOL OnInitDialog();
+	CButton	m_chkChEnable;
+	CButton m_chkChSave;
 	DataProcessing*data_p;
+	afx_msg void OnBnClickedCheckSave();
+	afx_msg void OnBnClickedCheckPsd();
 };
