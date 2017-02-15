@@ -758,9 +758,9 @@ void CDSOSampleDlg::OnBnClickedButtonDaq()
 			KillTimer(3);
 			daqv->Create(MAKEINTRESOURCE(IDD_DAQ), this);
 		}
+		datap->Initial();
 		GetDlgItem(IDC_BUTTON_DAQ)->SetWindowText(_T("Stop DAQ"));
 		daqv->ShowWindow(SW_SHOW);
-		datap->Initial();
 		SetTimer(3, 500, NULL);//set the Drawing timer
 		daqflag = true;
 	}
@@ -768,6 +768,7 @@ void CDSOSampleDlg::OnBnClickedButtonDaq()
 	{
 		KillTimer(3);
 		GetDlgItem(IDC_BUTTON_DAQ)->SetWindowText(_T("Start DAQ"));
+		Sleep(1000);
 		daqv->Reset();
 		datap->Stop();
 		daqflag = false;

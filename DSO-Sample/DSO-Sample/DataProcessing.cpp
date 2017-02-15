@@ -9,6 +9,8 @@ DataProcessing::DataProcessing()
 	len = DEF_READ_DATA_LEN;
 	Ch1 = NULL;
 	Ch2 = NULL;
+	outf = NULL;
+	outNtuple = NULL;
 	daqgf = new MakeDAQGraph();
 	daq_c.cutoff = 0.01;
 	daq_c.MCA_MAX = 1000;
@@ -41,6 +43,8 @@ UINT DataProcessing::BeginThread()
 	pData->rt1 = &risingtime1;
 	pData->rt2 = &risingtime2;
 	pData->DSP_flag = daq_c.PSD_flag;
+	pData->SAVE_flag = daq_c.SAVE_flag;
+	pData->OUT_Ntuple = outNtuple;
 	CWinThread* mythread = AfxBeginThread((AFX_THREADPROC)TreadFunction, pData, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 	return 0;
 }
@@ -88,13 +92,18 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 			pData->obuf1[i] = pData->ibuf1[i];
 		}
 	}
+	double peak = 0;
+	for (int i = 0; i < pData->ilen; i++)
+	{
+		peak = (pData->obuf1[i] > peak) ? pData->obuf1[i] : peak;
+	}
 
 	RisingTimeCal* rtcal = new RisingTimeCal(pData->ilen);
 
 	//rising time
 	rtcal->Initial();
 	*pData->rt1 = rtcal->Processing(pData->ibuf1);
-
+	if (pData->SAVE_flag)pData->OUT_Ntuple->Fill(peak, *pData->rt1);
 	delete rtcal;
 	delete pData;
 	return 0;
@@ -116,6 +125,7 @@ int DataProcessing::Initial()
 		wcstombs(aux_string, tmp_name, len); //conversion to char *	
 		aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string	
 		outf = new TFile(aux_string, "NEW");
+		outNtuple = new TNtuple("outdata","outdata","E:T");
 	}
 	return 0;
 }
@@ -133,6 +143,7 @@ int DataProcessing::Stop()
 {
 	if (daq_c.SAVE_flag)
 	{
+		outNtuple->Write();
 		outf->Close();
 	}
 	return 0;

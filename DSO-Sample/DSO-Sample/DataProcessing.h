@@ -4,7 +4,7 @@
 #include "RisingTimeCal.h"
 #include "MakeDAQGraph.h"
 #include "TFile.h"
-#include "TTree.h"
+#include "TNtuple.h"
 
 //线程数据结构
 typedef struct ThreadData
@@ -18,7 +18,8 @@ typedef struct ThreadData
 	double *rt1;
 	double *rt2;
 	bool DSP_flag;
-	TFile*Out_File;
+	bool SAVE_flag;
+	TNtuple*OUT_Ntuple;
 }THREADDATA;
 
 class DataProcessing
@@ -49,7 +50,7 @@ public:
 	MakeDAQGraph*daqgf;
 	DAQCTRL daq_c;
 	TFile*outf;
-	TTree*outTree;
+	TNtuple*outNtuple;
 	int SetDAQCtrl(DAQCTRL tmp_c)
 	{
 		daq_c = tmp_c;

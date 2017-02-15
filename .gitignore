@@ -32,3 +32,4 @@
 *.aps
 *.txt
 *.root
+/DSO-Sample/DSO-Sample/clear.bat

@@ -125,6 +125,7 @@ BOOL DAQSetup::OnInitDialog()
 	str.Format(_T("%d"), DAQ_p.RT_MAX);
 	m_editRTimemax.SetWindowText(str);
 	m_chkChEnable.SetCheck(DAQ_p.PSD_flag);
+	m_chkChSave.SetCheck(DAQ_p.SAVE_flag);
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
