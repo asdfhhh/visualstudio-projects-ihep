@@ -64,6 +64,7 @@ CDSOSampleDlg::CDSOSampleDlg(CWnd* pParent /*=NULL*/)
 	m_Hard = new CHard();
 	gf = new DrawGraph();
 	datap = new DataProcessing();
+	daqset = new DAQSetup();
 	t_axis = NULL;
 	v_axis1 = NULL;
 	v_axis2 = NULL;
@@ -107,6 +108,7 @@ BEGIN_MESSAGE_MAP(CDSOSampleDlg, CDialogEx)
 	ON_WM_VSCROLL()
 	ON_BN_CLICKED(IDC_BUTTON_Snap, &CDSOSampleDlg::OnBnClickedButtonSnap)
 	ON_BN_CLICKED(IDC_BUTTON_DAQ, &CDSOSampleDlg::OnBnClickedButtonDaq)
+	ON_BN_CLICKED(IDC_BUTTON_Setup, &CDSOSampleDlg::OnBnClickedButtonSetup)
 END_MESSAGE_MAP()
 
 
@@ -768,4 +770,16 @@ void CDSOSampleDlg::OnBnClickedButtonDaq()
 		daqv->Reset();
 		daqflag = false;
 	}
+}
+
+
+void CDSOSampleDlg::OnBnClickedButtonSetup()
+{
+	// TODO: Add your control notification handler code here
+	if (daqset->GetSafeHwnd() == NULL)
+	{
+		daqset->Create(datap,MAKEINTRESOURCE(IDD_DIALOG_DAQSetup), this);
+		if(daqflag)OnBnClickedButtonDaq();
+	}
+	daqset->ShowWindow(SW_SHOW);
 }

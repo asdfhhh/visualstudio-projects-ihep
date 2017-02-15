@@ -47,6 +47,8 @@ public:
 	int SetDAQCtrl(DAQCTRL tmp_c)
 	{
 		daq_c = tmp_c;
+		daqgf->DeleteHist();
+		daqgf->Initial(daq_c);
 		return 0;
 	}
 	int FillHist();

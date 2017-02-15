@@ -75,6 +75,9 @@
     <ClInclude Include="MakeDAQGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DAQSetup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DSO-Sample.cpp">
@@ -117,6 +120,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MakeDAQGraph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DAQSetup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

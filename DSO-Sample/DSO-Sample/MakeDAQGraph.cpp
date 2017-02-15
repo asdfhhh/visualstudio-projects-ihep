@@ -43,6 +43,6 @@ int MakeDAQGraph::DeleteHist()
 	if(mca_con)delete mca_con;
 	if(rt_con)delete rt_con;
 	if(scatter_con)delete scatter_con;
-	if(drawing_con)delete drawing_con;
+	//if(drawing_con)delete drawing_con;
 	return 0;
 }

@@ -10,6 +10,7 @@
 #include "DrawGraph.h"
 #include "DAQ_Viewer.h"
 #include "DataProcessing.h"
+#include "DAQSetup.h"
 using namespace std;
 // CDSOSampleDlg dialog
 class CDSOSampleDlg : public CDialogEx
@@ -22,6 +23,7 @@ public:
 	Viewer *rootv;
 	DAQ_Viewer *daqv;
 	DrawGraph*gf;
+	DAQSetup*daqset;
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_DSOSAMPLE_DIALOG };
@@ -92,4 +94,5 @@ public:
 	// data Processing
 	DataProcessing* datap;
 	bool daqflag;
+	afx_msg void OnBnClickedButtonSetup();
 };
