@@ -82,6 +82,28 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 				pData->obuf1[i] = lowp_p.outm1;
 			}
 		}
+		//ch2
+		//energy
+		lowp_p.cutoff = highp_p.cutoff = pData->cutoff;
+		lowp->Initial(&lowp_p);
+		highp->Initial(&highp_p);
+		baseline = 0;
+		for (int i = 0; i < pData->ilen / 3; i++)baseline = baseline + pData->ibuf2[i];
+		if (pData->ilen)baseline = baseline / (pData->ilen / 3);
+		for (int i = 0; i < pData->ilen; i++)
+		{
+			highp_p.outm1 = highp->Processing(&highp_p, baseline - pData->ibuf2[i]);
+			lowp_p.outm1 = lowp->Processing(&lowp_p, highp_p.outm1);
+			pData->obuf2[i] = highp_p.outm1;
+		}
+		for (int ii = 0; ii < 5; ii++)
+		{
+			for (int i = 0; i < pData->ilen; i++)
+			{
+				lowp_p.outm1 = lowp->Processing(&lowp_p, pData->obuf2[i]);
+				pData->obuf2[i] = lowp_p.outm1;
+			}
+		}
 		delete lowp;
 		delete highp;
 	}
@@ -90,20 +112,28 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 		for (int i = 0; i < pData->ilen; i++)
 		{
 			pData->obuf1[i] = pData->ibuf1[i];
+			pData->obuf2[i] = pData->ibuf2[i];
 		}
 	}
-	double peak = 0;
+	double peak1 = 0;
+	double peak2 = 0;
 	for (int i = 0; i < pData->ilen; i++)
 	{
-		peak = (pData->obuf1[i] > peak) ? pData->obuf1[i] : peak;
+		peak1 = (pData->obuf1[i] > peak1) ? pData->obuf1[i] : peak1;
+		peak2 = (pData->obuf2[i] > peak2) ? pData->obuf2[i] : peak2;
 	}
 
 	RisingTimeCal* rtcal = new RisingTimeCal(pData->ilen);
-
+	//ch1
 	//rising time
 	rtcal->Initial();
 	*pData->rt1 = rtcal->Processing(pData->ibuf1);
-	if (pData->SAVE_flag)pData->OUT_Ntuple->Fill(peak, *pData->rt1);
+	//ch2
+	//rising time
+	rtcal->Initial();
+	*pData->rt2 = rtcal->Processing(pData->ibuf2);
+	//saving file;
+	if (pData->SAVE_flag)pData->OUT_Ntuple->Fill(peak1, *pData->rt1, peak2, *pData->rt2);
 	delete rtcal;
 	delete pData;
 	return 0;
@@ -125,7 +155,7 @@ int DataProcessing::Initial()
 		wcstombs(aux_string, tmp_name, len); //conversion to char *	
 		aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string	
 		outf = new TFile(aux_string, "NEW");
-		outNtuple = new TNtuple("outdata","outdata","E:T");
+		outNtuple = new TNtuple("outdata","outdata","E1:T1:E2:T2");
 	}
 	return 0;
 }
