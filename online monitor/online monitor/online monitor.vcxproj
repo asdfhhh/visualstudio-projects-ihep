@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CCAEF280-CFAC-4F2B-982F-88EA6602FB8F}</ProjectGuid>
+    <RootNamespace>onlinemonitor</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>15.0.26419.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\root\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>gdk-1.3.lib              glib-1.3.lib             libAfterImage.lib
+libASImage.lib           libASImageGui.lib        libCint.lib
+libCintex.lib            libcomplexDict.lib       libCore.lib
+libdequeDict.lib         libEG.lib                libEGPythia6.lib
+libEGPythia8.lib         libEve.lib               libFFTW.lib
+libFitPanel.lib          libFoam.lib              libfreetype.lib
+libFTGL.lib              libFumili.lib            libGdml.lib
+libGed.lib               libGenetic.lib           libGenVector.lib
+libGeom.lib              libGeomBuilder.lib       libGeomPainter.lib
+libGLEW.lib              libGpad.lib              libGraf.lib
+libGraf3d.lib            libGui.lib               libGuiBld.lib
+libGuiHtml.lib           libGviz3d.lib            libHbook.lib
+libHist.lib              libHistFactory.lib       libHistPainter.lib
+libHtml.lib              liblistDict.lib          liblzma.lib
+libmap2Dict.lib          libmapDict.lib           libMathCore.lib
+libMathMore.lib          libMatrix.lib            libminicern.lib
+libMinuit.lib            libMinuit2.lib           libMLP.lib
+libmultimap2Dict.lib     libmultimapDict.lib      libmultisetDict.lib
+libNet.lib               libOracle.lib            libpcre.lib
+libPhysics.lib           libPostscript.lib        libProof.lib
+libProofDraw.lib         libProofPlayer.lib       libPyROOT.lib
+libQuadp.lib             libRCastor.lib           libRecorder.lib
+libReflex.lib            libReflexDict.lib        libRFIO.lib
+libRGL.lib               libRint.lib              libRIO.lib
+libRMySQL.lib            libRODBC.lib             libRooFit.lib
+libRooFitCore.lib        libRooStats.lib          libRootAuth.lib
+libSessionViewer.lib     libsetDict.lib           libSmatrix.lib
+libSpectrum.lib          libSpectrumPainter.lib   libSPlot.lib
+libSQLIO.lib             libTable.lib             libThread.lib
+libTMVA.lib              libTree.lib              libTreePlayer.lib
+libTreeViewer.lib        libUnuran.lib            libvectorDict.lib
+libVMC.lib               libWin32gdk.lib          libXMLIO.lib
+libXMLParser.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>C:\root\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\root\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>gdk-1.3.lib              glib-1.3.lib             libAfterImage.lib
+libASImage.lib           libASImageGui.lib        libCint.lib
+libCintex.lib            libcomplexDict.lib       libCore.lib
+libdequeDict.lib         libEG.lib                libEGPythia6.lib
+libEGPythia8.lib         libEve.lib               libFFTW.lib
+libFitPanel.lib          libFoam.lib              libfreetype.lib
+libFTGL.lib              libFumili.lib            libGdml.lib
+libGed.lib               libGenetic.lib           libGenVector.lib
+libGeom.lib              libGeomBuilder.lib       libGeomPainter.lib
+libGLEW.lib              libGpad.lib              libGraf.lib
+libGraf3d.lib            libGui.lib               libGuiBld.lib
+libGuiHtml.lib           libGviz3d.lib            libHbook.lib
+libHist.lib              libHistFactory.lib       libHistPainter.lib
+libHtml.lib              liblistDict.lib          liblzma.lib
+libmap2Dict.lib          libmapDict.lib           libMathCore.lib
+libMathMore.lib          libMatrix.lib            libminicern.lib
+libMinuit.lib            libMinuit2.lib           libMLP.lib
+libmultimap2Dict.lib     libmultimapDict.lib      libmultisetDict.lib
+libNet.lib               libOracle.lib            libpcre.lib
+libPhysics.lib           libPostscript.lib        libProof.lib
+libProofDraw.lib         libProofPlayer.lib       libPyROOT.lib
+libQuadp.lib             libRCastor.lib           libRecorder.lib
+libReflex.lib            libReflexDict.lib        libRFIO.lib
+libRGL.lib               libRint.lib              libRIO.lib
+libRMySQL.lib            libRODBC.lib             libRooFit.lib
+libRooFitCore.lib        libRooStats.lib          libRootAuth.lib
+libSessionViewer.lib     libsetDict.lib           libSmatrix.lib
+libSpectrum.lib          libSpectrumPainter.lib   libSPlot.lib
+libSQLIO.lib             libTable.lib             libThread.lib
+libTMVA.lib              libTree.lib              libTreePlayer.lib
+libTreeViewer.lib        libUnuran.lib            libvectorDict.lib
+libVMC.lib               libWin32gdk.lib          libXMLIO.lib
+libXMLParser.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>C:\root\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="decode.cpp" />
+    <ClCompile Include="gui.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="viewer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="decode.h" />
+    <ClInclude Include="gui.h" />
+    <ClInclude Include="viewer.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
