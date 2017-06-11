@@ -33,3 +33,9 @@
 *.txt
 *.root
 /DSO-Sample/DSO-Sample/clear.bat
+*.json
+*.sqlite
+*.json
+*.vcxproj
+*.filters
+*.htm
