@@ -31,7 +31,11 @@ public:
 	virtual BOOL OnInitDialog();
 	CButton	m_chkChEnable;
 	CButton m_chkChSave;
+	CButton m_chkCh1Rev;
+	CButton m_chkCh2Rev;
 	DataProcessing*data_p;
 	afx_msg void OnBnClickedCheckSave();
 	afx_msg void OnBnClickedCheckPsd();
+	afx_msg void OnBnClickedCheckRevCh1();
+	afx_msg void OnBnClickedCheckRevCh2();
 };

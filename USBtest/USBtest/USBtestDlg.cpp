@@ -175,7 +175,7 @@ int CUSBtestDlg::TestUSB()
 	// This example assumes that the device automatically sends back,
 	// over its bulk-IN endpoint, any bytes that were received over its
 	// bulk-OUT endpoint (commonly referred to as a loopback function)
-	
+	/*
 	OVERLAPPED outOvLap, inOvLap;
 	outOvLap.hEvent = CreateEvent(NULL, false, false, L"CYUSB_OUT");
 	inOvLap.hEvent = CreateEvent(NULL, false, false, L"CYUSB_IN");
@@ -193,5 +193,54 @@ int CUSBtestDlg::TestUSB()
 	m_selectedUSBDevice->BulkInEndPt->FinishDataXfer(inBuf, length, &inOvLap, inContext);
 	CloseHandle(outOvLap.hEvent);
 	CloseHandle(inOvLap.hEvent);
+*/
+	Send_USB_CMD(0xAA, 0xEA, 0, 0, 0, 0xCC);//EA AA 00 00 CC 00
+	int gate_value = 200;
+	int value;
+	char buf[100];
+	sscanf(buf, "%d", &gate_value);
+	if ((gate_value < 4000) && (gate_value >= 50))
+	{
+		value = gate_value / 4000.0 * 4096;  //convert mV to ADC bin
+		Send_USB_CMD(0xAA, 0xEB, 0, 0, value >> 8, value);
+	}
+	else
+		printf("Set gate_value [%d] error!\n", gate_value);
 	return 1;
+}
+
+
+int CUSBtestDlg::Send_USB_CMD(BYTE cmd5, BYTE cmd4, BYTE cmd3, BYTE cmd2, BYTE cmd1, BYTE cmd0)
+{
+
+	outBuffer[1] = cmd5;
+	outBuffer[0] = cmd4;
+	outBuffer[3] = cmd3;
+	outBuffer[2] = cmd2;
+	outBuffer[5] = cmd1;
+	outBuffer[4] = cmd0;
+
+	outBytes = CMD_LEN;
+	outBulkControl.pipeNum = 0; //EP2 OUT
+
+	if (!m_selectedUSBDevice)
+	{
+		printf("Send_USB_CMD Error : hDevice=NULL!\n");
+		return;
+	}
+	int status = DeviceIoControl(
+		hDevice,
+		IOCTL_EZUSB_BULK_WRITE,
+		&outBulkControl,
+		sizeof(BULK_TRANSFER_CONTROL),
+		outBuffer,
+		outBytes,
+		&nBytes,
+		NULL);
+
+	if (status)
+		printf("Send USB CMD %d Bytes: 0x%02X 0x%02X  0x%02X 0x%02X  0x%02X 0x%02X\n", nBytes, outBuffer[1], outBuffer[0], outBuffer[3], outBuffer[2], outBuffer[5], outBuffer[4]);
+	else
+		printf("Send_USB_CMD Error, Return Status!=0 !\n");
+	return 0;
 }

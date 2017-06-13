@@ -4,7 +4,8 @@
 
 #pragma once
 #include "CyAPI.h"
-
+#define CMD_LEN 6 
+#define IN_SIZE 1024 
 
 // CUSBtestDlg dialog
 class CUSBtestDlg : public CDialogEx
@@ -27,7 +28,10 @@ protected:
 	HICON m_hIcon;
 	//below is USB code
 	CCyUSBDevice	*m_selectedUSBDevice;
-
+	unsigned char outBuffer[CMD_LEN];  //用于发送命令
+	unsigned char inBuffer[IN_SIZE]; //用于接收数据的缓存 
+	ULONG outBytes, inBytes;
+	ULONG nBytes;
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
@@ -39,4 +43,5 @@ public:
 	afx_msg void OnBnClickedOk();
 	// this is a test function
 	int TestUSB();
+	int Send_USB_CMD(BYTE cmd5, BYTE cmd4, BYTE cmd3, BYTE cmd2, BYTE cmd1, BYTE cmd0);
 };

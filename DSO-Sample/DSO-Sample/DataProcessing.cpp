@@ -17,6 +17,8 @@ DataProcessing::DataProcessing()
 	daq_c.RT_MAX = 10;
 	daq_c.PSD_flag = true;
 	daq_c.SAVE_flag = false;
+	daq_c.Ch1_revert = false;
+	daq_c.Ch2_revert = false;
 	daqgf->Initial(daq_c);
 }
 
@@ -44,6 +46,8 @@ UINT DataProcessing::BeginThread()
 	pData->rt2 = &risingtime2;
 	pData->DSP_flag = daq_c.PSD_flag;
 	pData->SAVE_flag = daq_c.SAVE_flag;
+	pData->Ch1_p = daq_c.Ch1_revert;
+	pData->Ch2_p = daq_c.Ch2_revert;
 	pData->OUT_Ntuple = outNtuple;
 	CWinThread* mythread = AfxBeginThread((AFX_THREADPROC)TreadFunction, pData, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 	return 0;
@@ -66,11 +70,13 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 		lowp->Initial(&lowp_p);
 		highp->Initial(&highp_p);
 		double baseline = 0;
+		int polar = 1;
+		if (pData->Ch1_p)polar = -1;
 		for (int i = 0; i < pData->ilen / 3; i++)baseline = baseline + pData->ibuf1[i];
 		if (pData->ilen)baseline = baseline / (pData->ilen / 3);
 		for (int i = 0; i < pData->ilen; i++)
 		{
-			highp_p.outm1 = highp->Processing(&highp_p, pData->ibuf1[i] - baseline);
+			highp_p.outm1 = highp->Processing(&highp_p, polar*(pData->ibuf1[i] - baseline));
 			lowp_p.outm1 = lowp->Processing(&lowp_p, highp_p.outm1);
 			pData->obuf1[i] = highp_p.outm1;
 		}
@@ -88,11 +94,13 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 		lowp->Initial(&lowp_p);
 		highp->Initial(&highp_p);
 		baseline = 0;
+		polar = 1;
+		if (pData->Ch2_p)polar = -1;
 		for (int i = 0; i < pData->ilen / 3; i++)baseline = baseline + pData->ibuf2[i];
 		if (pData->ilen)baseline = baseline / (pData->ilen / 3);
 		for (int i = 0; i < pData->ilen; i++)
 		{
-			highp_p.outm1 = highp->Processing(&highp_p, baseline - pData->ibuf2[i]);
+			highp_p.outm1 = highp->Processing(&highp_p, polar*(pData->ibuf2[i] - baseline));
 			lowp_p.outm1 = lowp->Processing(&lowp_p, highp_p.outm1);
 			pData->obuf2[i] = highp_p.outm1;
 		}

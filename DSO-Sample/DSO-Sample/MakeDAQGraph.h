@@ -8,6 +8,8 @@ typedef struct DAQControl
 	double cutoff;
 	bool PSD_flag;
 	bool SAVE_flag;
+	bool Ch1_revert;
+	bool Ch2_revert;
 }DAQCTRL;
 class MakeDAQGraph
 {

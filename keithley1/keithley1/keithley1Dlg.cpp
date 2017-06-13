@@ -6,9 +6,9 @@
 #include "keithley1Dlg.h"
 #include "DlgProxy.h"
 #include "IEEE-C.H"
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框

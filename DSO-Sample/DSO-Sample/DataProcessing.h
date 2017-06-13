@@ -19,6 +19,9 @@ typedef struct ThreadData
 	double *rt2;
 	bool DSP_flag;
 	bool SAVE_flag;
+	//通道的极性反转
+	bool Ch1_p;
+	bool Ch2_p;
 	TNtuple*OUT_Ntuple;
 }THREADDATA;
 

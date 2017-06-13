@@ -29,6 +29,8 @@ void DAQSetup::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_DAQSetup_RTimeMax, m_editRTimemax);
 	DDX_Control(pDX, IDC_CHECK_PSD, m_chkChEnable);
 	DDX_Control(pDX, IDC_CHECK_SAVE, m_chkChSave);
+	DDX_Control(pDX, IDC_CHECK_REV_CH1, m_chkCh1Rev);
+	DDX_Control(pDX, IDC_CHECK_REV_CH2, m_chkCh2Rev);
 }
 
 
@@ -39,6 +41,8 @@ BEGIN_MESSAGE_MAP(DAQSetup, CDialogEx)
 	ON_EN_KILLFOCUS(IDC_EDIT_DAQSetup_RTimeMax, &DAQSetup::OnKillfocusEditDaqsetupRtimemax)
 	ON_BN_CLICKED(IDC_CHECK_SAVE, &DAQSetup::OnBnClickedCheckSave)
 	ON_BN_CLICKED(IDC_CHECK_PSD, &DAQSetup::OnBnClickedCheckPsd)
+	ON_BN_CLICKED(IDC_CHECK_REV_CH1, &DAQSetup::OnBnClickedCheckRevCh1)
+	ON_BN_CLICKED(IDC_CHECK_REV_CH2, &DAQSetup::OnBnClickedCheckRevCh2)
 END_MESSAGE_MAP()
 
 
@@ -126,6 +130,8 @@ BOOL DAQSetup::OnInitDialog()
 	m_editRTimemax.SetWindowText(str);
 	m_chkChEnable.SetCheck(DAQ_p.PSD_flag);
 	m_chkChSave.SetCheck(DAQ_p.SAVE_flag);
+	m_chkCh1Rev.SetCheck(DAQ_p.Ch1_revert);
+	m_chkCh2Rev.SetCheck(DAQ_p.Ch2_revert);
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -142,4 +148,18 @@ void DAQSetup::OnBnClickedCheckPsd()
 {
 	// TODO: Add your control notification handler code here
 	DAQ_p.PSD_flag = m_chkChEnable.GetCheck();
+}
+
+
+void DAQSetup::OnBnClickedCheckRevCh1()
+{
+	// TODO: Add your control notification handler code here
+	DAQ_p.Ch1_revert = m_chkCh1Rev.GetCheck();
+}
+
+
+void DAQSetup::OnBnClickedCheckRevCh2()
+{
+	// TODO: Add your control notification handler code here
+	DAQ_p.Ch2_revert = m_chkCh2Rev.GetCheck();
 }
