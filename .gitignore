@@ -39,3 +39,12 @@
 *.vcxproj
 *.filters
 *.htm
+*.tlb
+*.dep
+*.iobj
+*.ipdb
+*.vcproj
+*.user
+*.manifest
+*.ncb
+*.idl

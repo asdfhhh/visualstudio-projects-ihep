@@ -6,9 +6,9 @@
 #include "keithley1Dlg.h"
 #include "DlgProxy.h"
 #include "IEEE-C.H"
-//#ifdef _DEBUG
-//#define new DEBUG_NEW
-//#endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -18,13 +18,13 @@ class CAboutDlg : public CDialog
 public:
 	CAboutDlg();
 
-// 对话框数据
+	// 对话框数据
 	enum { IDD = IDD_ABOUTBOX };
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
-// 实现
+	// 实现
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -50,10 +50,12 @@ END_MESSAGE_MAP()
 IMPLEMENT_DYNAMIC(Ckeithley1Dlg, CDialog);
 
 Ckeithley1Dlg::Ckeithley1Dlg(CWnd* pParent /*=NULL*/)
-	: CDialog(Ckeithley1Dlg::IDD, pParent)
+: CDialog(Ckeithley1Dlg::IDD, pParent)
+, ZRC_flag(false)
 {
 	m_str_read = _T("Welcome to the soft of silicon measurement!");
 	StrFileName="data.txt";
+	ZRC_flag=false;
 	m_waittime=4;
 	m_maxvoltage=11;
 	m_stepvoltage=4;
@@ -96,6 +98,7 @@ BEGIN_MESSAGE_MAP(Ckeithley1Dlg, CDialog)
 	//ON_BN_CLICKED(IDC_WARM, &Ckeithley1Dlg::OnBnClickedWarm)
 	ON_CBN_SELCHANGE(IDC_COMBO2, &Ckeithley1Dlg::OnCbnSelchangeCombo2)
 	ON_BN_CLICKED(IDC_HELP, &Ckeithley1Dlg::OnBnClickedAbout)
+	ON_BN_CLICKED(IDC_CHECK1, &Ckeithley1Dlg::OnBnClickedCheck1)
 END_MESSAGE_MAP()
 
 
@@ -231,8 +234,8 @@ void Ckeithley1Dlg::OnBnClickedOk()
 	char rdbuf[100];
 	long int status;
 	unsigned long len;
- 	UpdateData();
-    ieee488_boardselect (m_gpib);
+	UpdateData();
+	ieee488_boardselect (m_gpib);
 	if(ieee488_board_present())
 	{
 		//Open and initialize the GPIB interface card
@@ -247,131 +250,146 @@ void Ckeithley1Dlg::OnBnClickedOk()
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 	m_str_read = wrtbuf;
 	pCtrl->AddString(m_str_read);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
 	}
+	//Reset all bits of the following event registers to 0: 
+	strcpy(wrtbuf,"*CLS");
+	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+	m_str_read = wrtbuf;
+	pCtrl->AddString(m_str_read);
+
+	if (status)
+	{
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+	}
+
 	//Select current function
-    strcpy(wrtbuf,"FUNC 'CURR'");
+	strcpy(wrtbuf,"FUNC 'CURR'");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 	m_str_read = wrtbuf;
 	pCtrl->AddString(m_str_read);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
-    }
-	//Enable zero check
-	strcpy(wrtbuf,"SYST:ZCH ON");
-	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-	m_str_read = wrtbuf;
-	pCtrl->AddString(m_str_read);
-    if (status)
+	}
+	if(ZRC_flag)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-		return;
-    }
-	//Select cunrrent range 200nA
-	strcpy(wrtbuf,"CURR:RANG:AUTO ON");
-	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-	m_str_read = wrtbuf;
-	pCtrl->AddString(m_str_read);
-    if (status)
-	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-		return;
-    }
-	//Trigger reading to be used as zero correction
-	strcpy(wrtbuf,"INIT");
-	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-	m_str_read = wrtbuf;
-	pCtrl->AddString(m_str_read);
-    if (status)
-	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-		return;
-    }
-	//Turn zero correct off
-	strcpy(wrtbuf,"SYST:ZCOR:STAT OFF");
-	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-	m_str_read = wrtbuf;
-	pCtrl->AddString(m_str_read);
-    if (status)
-	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-		return;
-    }
-	//Use last reading taken as zero corret value
-	strcpy(wrtbuf,"SYST:ZCOR:ACQ");
-	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-	m_str_read = wrtbuf;
-	pCtrl->AddString(m_str_read);
-    if (status)
-	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-		return;
-    }
-	//Perform zero correction
-	strcpy(wrtbuf,"SYST:ZCOR ON");
-	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-	m_str_read = wrtbuf;
-	pCtrl->AddString(m_str_read);
-    if (status)
-	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-		return;
-    }
-	//Disable zero check
-	strcpy(wrtbuf,"SYST:ZCH OFF");
-	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-	m_str_read = wrtbuf;
-	pCtrl->AddString(m_str_read);
-    if (status)
-	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-		return;
-    }
+		//Enable zero check
+		strcpy(wrtbuf,"SYST:ZCH ON");
+		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+		m_str_read = wrtbuf;
+		pCtrl->AddString(m_str_read);
+		if (status)
+		{
+			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+			return;
+		}
+		//Select cunrrent range 200nA
+		strcpy(wrtbuf,"CURR:RANG:AUTO ON");
+		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+		m_str_read = wrtbuf;
+		pCtrl->AddString(m_str_read);
+		if (status)
+		{
+			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+			return;
+		}
+
+		//Trigger reading to be used as zero correction
+		strcpy(wrtbuf,"INIT");
+		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+		m_str_read = wrtbuf;
+		pCtrl->AddString(m_str_read);
+		if (status)
+		{
+			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+			return;
+		}
+		//Turn zero correct off
+		strcpy(wrtbuf,"SYST:ZCOR:STAT OFF");
+		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+		m_str_read = wrtbuf;
+		pCtrl->AddString(m_str_read);
+		if (status)
+		{
+			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+			return;
+		}
+		//Use last reading taken as zero corret value
+		strcpy(wrtbuf,"SYST:ZCOR:ACQ");
+		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+		m_str_read = wrtbuf;
+		pCtrl->AddString(m_str_read);
+		if (status)
+		{
+			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+			return;
+		}
+		//Perform zero correction
+		strcpy(wrtbuf,"SYST:ZCOR ON");
+		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+		m_str_read = wrtbuf;
+		pCtrl->AddString(m_str_read);
+		if (status)
+		{
+			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+			return;
+		}
+		//Disable zero check
+		strcpy(wrtbuf,"SYST:ZCH OFF");
+		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+		m_str_read = wrtbuf;
+		pCtrl->AddString(m_str_read);
+		if (status)
+		{
+			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+			return;
+		}
+	}
 	//Select source range
 	strcpy(wrtbuf,"SOUR:VOLT:RANGE 500");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 	m_str_read = wrtbuf;
 	pCtrl->AddString(m_str_read);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
-    }
+	}
 	//Set current limit 2mA
 	strcpy(wrtbuf,"SOUR:VOLT:ILIM 2.5e-3");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 	m_str_read = wrtbuf;
 	pCtrl->AddString(m_str_read);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
-    }
+	}
 	//Inital voltage set 0V
 	strcpy(wrtbuf,"SOUR:VOLT 0");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 	m_str_read = wrtbuf;
 	pCtrl->AddString(m_str_read);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
-    }
+	}
 	//Set voltage into data
 	strcpy(wrtbuf,"FORM:ELEM READ");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 	m_str_read = wrtbuf;
 	pCtrl->AddString(m_str_read);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
-    }
+	}
 	//Read the IDN
 	strcpy(wrtbuf,"*IDN?");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
@@ -379,18 +397,18 @@ void Ckeithley1Dlg::OnBnClickedOk()
 	pCtrl->AddString(m_str_read);
 	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
-    }
+	}
 	//Read the response string from the instrument with specific address
 	ieee488_enter (rdbuf, 100, &len, 22, &status);
 	m_str_read = rdbuf;
 	pCtrl->AddString(m_str_read);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in reading the response string from the GPIB instrument."));
+		AfxMessageBox(_T("Error in reading the response string from the GPIB instrument."));
 		return;
-    }
+	}
 }
 //自定义消息
 #define WM_UPDATEPOS		WM_USER + 1000
@@ -404,11 +422,11 @@ typedef struct ThreadData
 	int tmp_waittime;
 }THREADDATA;
 //工作线程
-	FILE* gnu_plot_pipe;
+FILE* gnu_plot_pipe;
 UINT WorkThreadProc(LPVOID lParam)
 {
 	THREADDATA* pData = (THREADDATA*)lParam;
-	char wrtbuf[100]="READ?";
+	char wrtbuf[100]="*CLS";
 	char rdbuf[100];
 	char*pend;
 	unsigned int data;
@@ -427,7 +445,7 @@ UINT WorkThreadProc(LPVOID lParam)
 	{
 		AfxMessageBox(_T("Can not open the Online monitor!"));
 	};
-    free( gnu_plot_filename);
+	free( gnu_plot_filename);
 
 	long int status;
 	unsigned long len;
@@ -440,25 +458,41 @@ UINT WorkThreadProc(LPVOID lParam)
 	//Select source range
 	/*sprintf(wrtbuf,"SOUR:VOLT:RANGE 500");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-    }
-*/
+	AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+	}
+	*/
+	//Reset all bits of the following event registers to 0: 
+	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+
+	if (status)
+	{
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+	}
+
 	//**************************        Voltage ON
 	//**************************
 	strcpy(wrtbuf,"SOUR:VOLT:STAT ON");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-    if (status)
+
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-    }
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+	}
 
 	//Change voltage
 	for(int v_set=0;v_set<mV;v_set=v_set+sV)
 	{
 		sprintf(wrtbuf,"SOUR:VOLT %d",v_set);
 		ieee488_send(22, wrtbuf, strlen(wrtbuf), &status);
+		if (status)
+		{
+			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		}
+		//reading
+		strcpy(wrtbuf,"READ?");
+		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 		if (status)
 		{
 			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
@@ -489,7 +523,7 @@ UINT WorkThreadProc(LPVOID lParam)
 		pData->pDlg->f_out.Write("\r\n",2);
 		pData->pDlg->f_out.Close();
 
-		
+
 		CString tmp_name=_T("plot '")+pData->pDlg->StrFileName+_T("' with lp\n");
 		char *aux_string=(char*)tmp_name.GetBuffer(0);
 		long len = wcslen (tmp_name); //the length of "salut"
@@ -508,15 +542,16 @@ UINT WorkThreadProc(LPVOID lParam)
 
 		fflush( gnu_plot_pipe);
 	}
+
 	strcpy(wrtbuf,"SOUR:VOLT:STAT OFF");
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-    }
-	AfxMessageBox(_T("Mesurement complete!"));
-    if(gnu_plot_pipe)_pclose( gnu_plot_pipe);
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+	}
 
+	AfxMessageBox(_T("Mesurement complete!"));
+	if(gnu_plot_pipe)_pclose( gnu_plot_pipe);
 	delete pData;
 	return 0;
 }
@@ -564,7 +599,18 @@ void Ckeithley1Dlg::OnBnClickedCancel()
 			return;
 		}
 	}
-    if(gnu_plot_pipe)_pclose( gnu_plot_pipe);
+	//Reset all bits of the following event registers to 0: 
+	strcpy(wrtbuf,"*CLS");
+	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+	m_str_read = wrtbuf;
+	pCtrl->AddString(m_str_read);
+
+	if (status)
+	{
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+	}
+
+	if(gnu_plot_pipe)_pclose( gnu_plot_pipe);
 	OnCancel();
 }
 
@@ -572,9 +618,9 @@ void Ckeithley1Dlg::OnBnClickedCancel()
 void Ckeithley1Dlg::OnBnClickedButton2()
 {
 	// TODO: Add your control notification handler code here
-		//终止线程
+	//终止线程
 	if(this->m_ThreadOne)
-	  TerminateThread(this->m_ThreadOne->m_hThread,NULL);
+		TerminateThread(this->m_ThreadOne->m_hThread,NULL);
 
 	char wrtbuf[100]="*RST";
 	long int status;
@@ -584,12 +630,23 @@ void Ckeithley1Dlg::OnBnClickedButton2()
 	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 	m_str_read = wrtbuf;
 	pCtrl->AddString(m_str_read);
-    if (status)
+	if (status)
 	{
-	    AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		return;
-    }
-    if(gnu_plot_pipe)_pclose( gnu_plot_pipe);
+	}
+	//Reset all bits of the following event registers to 0: 
+	strcpy(wrtbuf,"*CLS");
+	ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
+	m_str_read = wrtbuf;
+	pCtrl->AddString(m_str_read);
+
+	if (status)
+	{
+		AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
+	}
+
+	if(gnu_plot_pipe)_pclose( gnu_plot_pipe);
 }
 
 void Ckeithley1Dlg::OnEnChangeEdit2()
@@ -622,5 +679,11 @@ void Ckeithley1Dlg::OnBnClickedAbout()
 {
 	CAboutDlg AboutDlg;
 	AboutDlg.DoModal();
-// TODO: Add your control notification handler code here
+	// TODO: Add your control notification handler code here
+}
+
+void Ckeithley1Dlg::OnBnClickedCheck1()
+{
+	// TODO: Add your control notification handler code here
+	ZRC_flag=!ZRC_flag;
 }

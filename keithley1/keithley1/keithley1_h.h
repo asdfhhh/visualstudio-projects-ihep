@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Tue Jun 13 11:32:48 2017
+/* at Thu Jun 15 10:14:47 2017
  */
 /* Compiler settings for keithley1.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 

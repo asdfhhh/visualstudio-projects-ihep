@@ -61,4 +61,6 @@ public:
 	afx_msg void OnCbnSelchangeCombo2();
 public:
 	afx_msg void OnBnClickedAbout();
+	afx_msg void OnBnClickedCheck1();
+	bool ZRC_flag;
 };

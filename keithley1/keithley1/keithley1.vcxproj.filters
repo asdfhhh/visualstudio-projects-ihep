@@ -37,6 +37,9 @@
     <ClInclude Include="DlgProxy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\Program Files\Keithley Instruments\KI-488\Include\IEEE-C.H">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="keithley1.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -6,9 +6,9 @@
 #include "DlgProxy.h"
 #include "keithley1Dlg.h"
 
-//#ifdef _DEBUG
-//#define new DEBUG_NEW
-//#endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 
 // Ckeithley1DlgAutoProxy
