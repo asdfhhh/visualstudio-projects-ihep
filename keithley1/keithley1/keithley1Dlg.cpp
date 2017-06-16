@@ -491,12 +491,12 @@ UINT WorkThreadProc(LPVOID lParam)
 			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
 		}
 		//reading
-		strcpy(wrtbuf,"READ?");
+		/*strcpy(wrtbuf,"READ?");
 		ieee488_send (22, wrtbuf, strlen(wrtbuf), &status);
 		if (status)
 		{
 			AfxMessageBox(_T("Error in writing the string command to the GPIB instrument."));
-		}
+		}*/
 		Sleep(wtime);
 
 		//reading
