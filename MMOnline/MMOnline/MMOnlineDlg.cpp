@@ -20,16 +20,35 @@
 CMMOnlineDlg::CMMOnlineDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_MMONLINE_DIALOG, pParent)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON1);
 	view = new Viewer(this);
 	t = 0;
 	root_file = 0;
+	h1 = 0;
+	h2 = 0;
+	output = 0;
+	s_X_F_th = _T("200");
+	s_X_S_th = _T("400");
+	s_Y_F_th = _T("200");
+	s_Y_S_th = _T("400");
+	s_T_th = _T("0.1");
+	s_NSample = _T("100");
+	s_R_ch = _T("30");
 }
 
 void CMMOnlineDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_PROGRESS1, m_Progress);
+	DDX_Text(pDX, IDC_EDIT1, s_NSample);
+	DDX_Text(pDX, IDC_EDIT2, s_X_F_th);
+	DDX_Text(pDX, IDC_EDIT3, s_X_S_th);
+	DDX_Text(pDX, IDC_EDIT4, s_T_th);
+	DDX_Text(pDX, IDC_EDIT5, s_Y_F_th);
+	DDX_Text(pDX, IDC_EDIT6, s_Y_S_th);
+	DDX_Text(pDX, IDC_EDIT7, s_R_ch);
+
+	DDX_Control(pDX, IDC_CHECK1, m_chkChEnable);
+
 }
 
 BEGIN_MESSAGE_MAP(CMMOnlineDlg, CDialogEx)
@@ -39,6 +58,17 @@ BEGIN_MESSAGE_MAP(CMMOnlineDlg, CDialogEx)
 	//	ON_NOTIFY(NM_CUSTOMDRAW, IDC_PROGRESS1, &CMMOnlineDlg::OnNMCustomdrawProgress1)
 	ON_BN_CLICKED(IDOK, &CMMOnlineDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CMMOnlineDlg::OnBnClickedCancel)
+	ON_BN_CLICKED(IDC_BUTTON2, &CMMOnlineDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CMMOnlineDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CMMOnlineDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON5, &CMMOnlineDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON10, &CMMOnlineDlg::OnBnClickedButton10)
+	ON_BN_CLICKED(IDC_BUTTON11, &CMMOnlineDlg::OnBnClickedButton11)
+	ON_BN_CLICKED(IDC_BUTTON12, &CMMOnlineDlg::OnBnClickedButton12)
+	ON_BN_CLICKED(IDC_BUTTON7, &CMMOnlineDlg::OnBnClickedButton7)
+	ON_BN_CLICKED(IDC_BUTTON8, &CMMOnlineDlg::OnBnClickedButton8)
+	ON_BN_CLICKED(IDC_BUTTON9, &CMMOnlineDlg::OnBnClickedButton9)
+	ON_BN_CLICKED(IDC_BUTTON6, &CMMOnlineDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 
@@ -128,10 +158,14 @@ void CMMOnlineDlg::OnBnClickedButton1()
 // 处理RAW的程序
 int CMMOnlineDlg::RawDataProcess()
 {
+	UpdateData(TRUE);
+
 	UShort_t adc_data[64][512];
 	int Inf_time;
 	int tag;
-
+	float f_T_th = _tstof(s_T_th);
+	int i_NSample = _tstoi(s_NSample);
+	int ext_ped = m_chkChEnable.GetCheck();
 	UShort_t data_bulk[66];
 	UShort_t *adc = 0;
 	//读入文件
@@ -144,13 +178,17 @@ int CMMOnlineDlg::RawDataProcess()
 	ifstream f(aux_string, ifstream::binary);
 	if (f.is_open())
 	{
+
+		Processing *P_GUI = new Processing(this);
+		if (P_GUI->GetSafeHwnd() == NULL)P_GUI->Create(MAKEINTRESOURCE(IDD_DIALOG2), this);
+		P_GUI->ShowWindow(SW_SHOW);
+		m_Progress = P_GUI->GetCP();
 		t = new TTree("ana", "the results of analysis");
 		t->Branch("baseline", baseline, "baseline[64]/F");
 		t->Branch("peak", peak, "peak[64]/F");
 		t->Branch("ptime", ptime, "ptime[64]/I");
 		t->Branch("rtime", rtime, "rtime[64]/F");
 		t->Branch("det_ch", &det_ch, "det_ch/I");
-		TH1F *h1 = new TH1F("test", "test", 512, 0, 512);
 
 		//TH1F*h1=new TH1F("test","test",512,0,512);
 		int count = 0;
@@ -158,14 +196,14 @@ int CMMOnlineDlg::RawDataProcess()
 		f.seekg(0, f.end);
 		int file_size = f.tellg();
 		int process_cur = 0;
-		m_Progress.SetRange(0, 100);
-		m_Progress.SetPos(0);
+		m_Progress->SetRange(0, 100);
+		m_Progress->SetPos(0);
 		f.seekg(0, f.beg);
 		while (!f.eof())
 		{
 			f.read((char*)&tag, 1);
 			process_cur = f.tellg() * 100 / file_size;
-			m_Progress.SetPos(process_cur);
+			m_Progress->SetPos(process_cur);
 			if ((tag & 0xFF) == 0xEE)
 			{
 				f.read((char*)&tag, 1);
@@ -200,34 +238,53 @@ int CMMOnlineDlg::RawDataProcess()
 								f.seekg(-2, ios::cur);
 								count++;
 								E_count++;
+								continue;
 							}
 							else if ((tag & 0xFFFF) == 0xFFBC)
 							{
 								E_count++;
+								continue;
 							}
 							else
 							{
 								if (!f.eof())
 								{
 									E_count++;
+									continue;
 								}
 							}
-							h1->Reset();
+							//get the information
 							for (int j = 0; j < 64; j++)
 							{
+								if (ext_ped)
+								{
+									if (det_ch == 208)baseline[j] = ped_data[j];
+									else if (det_ch == 704)baseline[j] = ped_data[j + 64];
+								}
+								else
+								{
+									baseline[j] = 0;
+									for (int jj = 0; jj < i_NSample; jj++)
+									{
+										baseline[j] += adc_data[j][jj];
+									}
+									baseline[j] = baseline[j] / i_NSample;
+								}
+								ptime[j] = 0;
+								rtime[j] = 0;
+								peak[j] = 0;
 								for (int jj = 0; jj < 512; jj++)
 								{
-									if (jj == 0)baseline[j] = 0;
-									if (jj < 100)baseline[j] += adc_data[j][jj];
-									if (jj == 100)baseline[j] = baseline[j] / 100;
-									h1->Fill(jj, adc_data[j][jj]);
+									if (peak[j] < (adc_data[j][jj] - baseline[j]))
+									{
+										peak[j] = adc_data[j][jj] - baseline[j];
+										ptime[j] = jj;
+									}
 								}
-								ptime[j] = h1->GetMaximumBin();
-								peak[j] = h1->GetBinContent(ptime[j]) - baseline[j];
-								for (int jj = 0; jj < ptime[j]; jj++)
+								for (int jj = ptime[j]; jj > 0; jj--)
 								{
 									rtime[j] = jj;
-									if ((h1->GetBinContent(jj) - baseline[j]) > (peak[j] / 10.0))break;
+									if ((adc_data[j][jj] - baseline[j]) < (peak[j] * f_T_th))break;
 								}
 							}
 							t->Fill();
@@ -236,15 +293,18 @@ int CMMOnlineDlg::RawDataProcess()
 				}
 			}
 		}
-		m_FilePath.TrimRight(_T(".dat"));
-		m_FilePath += _T(".root");
-		aux_string = (char*)m_FilePath.GetBuffer(0);
-		len = wcslen(m_FilePath); //the length of "salut"
-		wcstombs(aux_string, m_FilePath, len); //conversion to char *	
+
+		tmp_name = m_FilePath;
+		tmp_name.TrimRight(_T(".dat"));
+		tmp_name += _T(".root");
+		aux_string = (char*)tmp_name.GetBuffer(0);
+		len = wcslen(tmp_name); //the length of "salut"
+		wcstombs(aux_string, tmp_name, len); //conversion to char *	
 		aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string	
 		root_file = new TFile(aux_string, "RECREATE");
 		f.close();
-		m_Progress.SetPos(0);
+		P_GUI->DestroyWindow();
+		delete P_GUI;
 		return 0;
 	}
 	else
@@ -267,28 +327,41 @@ void CMMOnlineDlg::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	//CDialogEx::OnOK();
-	//open ROOT viewer
-	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
-	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
-	view->ShowWindow(SW_SHOW);
-	RootProcessing();
+	if (t)
+	{
+		RootProcessing();
+	}
 }
 
 
 void CMMOnlineDlg::OnBnClickedCancel()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	if(t) t->Write();
-	if(root_file)root_file->Close();
+	if (t) t->Write();
+	if (root_file)root_file->Close();
 	CDialogEx::OnCancel();
 }
 
 
 int CMMOnlineDlg::RootProcessing()
 {
-	float pos;
-	float ene;
-	int size_p;
+	UpdateData(TRUE);
+
+	int count = 0;
+	float enex = 0;
+	float eney = 0;
+	int size_px = 0;
+	int size_py = 0;
+	float posx = 0;
+	float posy = 0;
+
+	output = new TTree("output", "the results of analysis");
+	output->Branch("posx", &posx, "posx/F");
+	output->Branch("posy", &posy, "posy/F");
+	output->Branch("enex", &enex, "enex/F");
+	output->Branch("eney", &eney, "eney/F");
+	output->Branch("size_px", &size_px, "size_px/I");
+	output->Branch("size_py", &size_py, "size_py/I");
 
 	int total = t->GetEntries();
 	t->SetBranchAddress("det_ch", &det_ch);
@@ -296,46 +369,418 @@ int CMMOnlineDlg::RootProcessing()
 	t->SetBranchAddress("peak", &peak);
 	t->SetBranchAddress("ptime", &ptime);
 	t->SetBranchAddress("rtime", &rtime);
-	float F_th = 400;
-	float S_th = 200;
+	int i_X_F_th = _tstoi(s_X_F_th);
+	int i_X_S_th = _tstoi(s_X_S_th);
+	int i_Y_F_th = _tstoi(s_Y_F_th);
+	int i_Y_S_th = _tstoi(s_Y_S_th);
 
-	m_Progress.SetRange(0, total);
-	m_Progress.SetPos(0);
-	m_Progress.SetStep(1);
+	Processing *P_GUI = new Processing(this);
+	if (P_GUI->GetSafeHwnd() == NULL)P_GUI->Create(MAKEINTRESOURCE(IDD_DIALOG2), this);
+	P_GUI->ShowWindow(SW_SHOW);
+	m_Progress = P_GUI->GetCP();
+
+	m_Progress->SetRange(0, total);
+	m_Progress->SetPos(0);
+	m_Progress->SetStep(1);
 	for (int i = 1; i <= total; i++)
 	{
 		t->GetEntry(i);
-		m_Progress.StepIt();
+		m_Progress->StepIt();
 		int max_p = 0;
-		for (int j = 0; j<64; j++)
+		for (int j = 0; j < 64; j++)
 		{
-			max_p = (peak[max_p]>peak[j]) ? max_p : j;
+			max_p = (peak[max_p] > peak[j]) ? max_p : j;
 		}
-		if (peak[max_p]>S_th)
+		if (det_ch == 208)
 		{
-			int j = 1;
-			size_p = 1;
-			ene = peak[max_p];
-			pos = ene*max_p;
-			while (((max_p - j)>-1) && (peak[max_p - j]>F_th))
+			if (peak[max_p] > i_X_S_th)
 			{
-				ene += peak[max_p - j];
-				pos += peak[max_p - j] * (max_p - j);
-				j++;
-				size_p++;
+				int j = 1;
+				size_px = 1;
+
+				enex = peak[max_p];
+				posx = enex*max_p;
+
+				while (((max_p - j) > -1) && (peak[max_p - j] > i_X_F_th))
+				{
+					enex += peak[max_p - j];
+					posx += peak[max_p - j] * (max_p - j);
+					j++;
+					size_px++;
+				}
+				j = 1;
+				while (((max_p + j) < 64) && (peak[max_p + j] > i_X_F_th))
+				{
+					enex += peak[max_p + j];
+					posx += peak[max_p + j] * (max_p + j);
+					j++;
+					size_px++;
+				}
+				posx = posx / enex;
 			}
-			j = 1;
-			while (((max_p + j)<64) && (peak[max_p + j]>F_th))
-			{
-				ene += peak[max_p + j];
-				pos += peak[max_p + j] * (max_p + j);
-				j++;
-				size_p++;
-			}
-			pos = pos / ene;
 		}
-		view->FillHist(ene);
+		else if (det_ch == 704)
+		{
+			if (peak[max_p] > i_Y_S_th)
+			{
+				int j = 1;
+				size_py = 1;
+
+				eney = peak[max_p];
+				posy = eney*max_p;
+
+				while (((max_p - j) > -1) && (peak[max_p - j] > i_Y_F_th))
+				{
+					eney += peak[max_p - j];
+					posy += peak[max_p - j] * (max_p - j);
+					j++;
+					size_py++;
+				}
+				j = 1;
+				while (((max_p + j) < 64) && (peak[max_p + j] > i_Y_F_th))
+				{
+					eney += peak[max_p + j];
+					posy += peak[max_p + j] * (max_p + j);
+					j++;
+					size_py++;
+				}
+				posy = posy / eney;
+			}
+			output->Fill();
+			count++;
+		}
 	}
-	m_Progress.SetPos(0);
+	P_GUI->DestroyWindow();
+	delete P_GUI;
+
+	output->Fill();
+	return count;
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton2()
+{
+	// TODO: Add your control notification handler code here
+	//energy spectrum
+	if (!output)return;
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	output->Draw("enex>>h1");
+	h1 = (TH1F*)gDirectory->Get("h1");
+	view->FillHist(h1);
+	view->UpdateViewer();
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton3()
+{
+	// TODO: Add your control notification handler code here
+	//X distribution 
+	if (!output)return;
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	output->Draw("posx>>h1");
+	h1 = (TH1F*)gDirectory->Get("h1");
+	view->FillHist(h1);
+	view->UpdateViewer();
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton4()
+{
+	// TODO: Add your control notification handler code here
+	//X cluster size distribution
+	if (!output)return;
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	output->Draw("size_px>>h1");
+	h1 = (TH1F*)gDirectory->Get("h1");
+	view->FillHist(h1);
+	view->UpdateViewer();
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton5()
+{
+	// TODO: Add your control notification handler code here
+	//X-Y distribution
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h2)delete h2;
+	output->Draw("posx:posy>>h2");
+	h2 = (TH2F*)gDirectory->Get("h2");
+	view->FillHist(h2);
+	view->UpdateViewer();
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton10()
+{
+	// TODO: Add your control notification handler code here
+	//energy spectrum
+	if (!output)return;
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	output->Draw("eney>>h1");
+	h1 = (TH1F*)gDirectory->Get("h1");
+	view->FillHist(h1);
+	view->UpdateViewer();
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton11()
+{
+	// TODO: Add your control notification handler code here
+	//Y distribution 
+	if (!output)return;
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	output->Draw("posy>>h1");
+	h1 = (TH1F*)gDirectory->Get("h1");
+	view->FillHist(h1);
+	view->UpdateViewer();
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton12()
+{
+	// TODO: Add your control notification handler code here
+	// TODO: Add your control notification handler code here
+	//Y cluster size distribution
+	if (!output)return;
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	output->Draw("size_py>>h1");
+	h1 = (TH1F*)gDirectory->Get("h1");
+	view->FillHist(h1);
+	view->UpdateViewer();
+}
+
+
+//void CMMOnlineDlg::OnChangeEdit2()
+//{
+//	// TODO:  If this is a RICHEDIT control, the control will not
+//	// send this notification unless you override the CDialogEx::OnInitDialog()
+//	// function and call CRichEditCtrl().SetEventMask()
+//	// with the ENM_CHANGE flag ORed into the mask.
+//
+//	// TODO:  Add your control notification handler code here
+//}
+
+
+void CMMOnlineDlg::OnBnClickedButton7()
+{
+	// TODO: Add your control notification handler code here
+	CFileDialog dlg(TRUE,
+		_T(".ped"),
+		NULL,
+		OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT | OFN_ENABLESIZING,
+		_T("pedestal DATA (*.ped)|*.ped||"),
+		NULL);
+	if (dlg.DoModal() == IDOK)
+	{
+		m_FilePath = dlg.GetPathName();////////取出文件路径 
+		m_FileExt = dlg.GetFileExt();
+		UpdateData(FALSE);
+	}
+	if (m_FileExt == _T("ped"))PedProcessing();
+	else return;
+}
+
+
+int CMMOnlineDlg::PedProcessing()
+{
+	//读入文件
+	CString tmp_name = m_FilePath;
+	char *aux_string = (char*)tmp_name.GetBuffer(0);
+	long len = wcslen(tmp_name); //the length of "salut"
+	wcstombs(aux_string, tmp_name, len); //conversion to char *	
+	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
+
+	ifstream f(aux_string);
+	for (int i = 0; i < 128; i++)
+	{
+		f >> ped_data[i];
+	}
+	f.close();
 	return 0;
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton8()
+{
+	// TODO: Add your control notification handler code here
+	if (!root_file)return;
+	//写入文件
+
+	CString tmp_name = m_FilePath;
+	tmp_name.TrimRight(_T(".root"));
+	tmp_name += _T(".ped");
+
+	char *aux_string = (char*)tmp_name.GetBuffer(0);
+	long len = wcslen(tmp_name); //the length of "salut"
+	wcstombs(aux_string, tmp_name, len); //conversion to char *	
+	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
+
+	ofstream f(aux_string);
+
+	int total = t->GetEntries();
+	t->SetBranchAddress("baseline", &baseline);
+	t->SetBranchAddress("det_ch", &det_ch);
+
+	Processing *P_GUI = new Processing(this);
+	if (P_GUI->GetSafeHwnd() == NULL)P_GUI->Create(MAKEINTRESOURCE(IDD_DIALOG2), this);
+	P_GUI->ShowWindow(SW_SHOW);
+	m_Progress = P_GUI->GetCP();
+
+	m_Progress->SetRange(0, total);
+	m_Progress->SetPos(0);
+	m_Progress->SetStep(1);
+	for (int i = 0; i < 128; i++)ped_data[i] = 0;
+	for (int i = 1; i <= total; i++)
+	{
+		t->GetEntry(i);
+		m_Progress->StepIt();
+		if (det_ch == 208)
+		{
+			for (int j = 0; j < 64; j++)
+			{
+				ped_data[j] += baseline[j];
+			}
+		}
+		else if (det_ch == 704)
+		{
+			for (int j = 0; j < 64; j++)
+			{
+				ped_data[j + 64] += baseline[j];
+			}
+		}
+	}
+	P_GUI->DestroyWindow();
+	delete P_GUI;
+
+	for (int i = 0; i < 128; i++)
+	{
+		ped_data[i] = ped_data[i] * 2 / total;
+		f << ped_data[i] << endl;
+	}
+
+	f.close();
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton9()
+{
+	// TODO: Add your control notification handler code here
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	h1 = new TH1F("Ped", "Pedestal distribution", 128, 0, 128);
+	for (int i = 0; i < 128; i++)h1->Fill(i, ped_data[i]);
+	view->FillHist(h1);
+	view->UpdateViewer();
+
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton6()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+
+	UShort_t adc_data[64][512];
+	int Inf_time;
+	int tag;
+	float f_T_th = _tstof(s_T_th);
+	int i_NSample = _tstoi(s_NSample);
+	int ext_ped = m_chkChEnable.GetCheck();
+	UShort_t data_bulk[66];
+	UShort_t *adc = 0;
+	int i_R_ch = _tstoi(s_R_ch);
+	//读入文件
+	CString tmp_name = m_FilePath;
+	char *aux_string = (char*)tmp_name.GetBuffer(0);
+	long len = wcslen(tmp_name); //the length of "salut"
+	wcstombs(aux_string, tmp_name, len); //conversion to char *	
+	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
+
+	ifstream f(aux_string, ifstream::binary);
+	if (f.is_open())
+	{
+		f.seekg(0, f.end);
+		int file_size = f.tellg();
+		static std::default_random_engine generator;
+		std::uniform_int_distribution<int> distribution(0, file_size);
+		int number = distribution(generator);
+		f.seekg(number);
+		while (1)
+		{
+			f.read((char*)&tag, 1);
+			if ((tag & 0xFF) == 0xEE)
+			{
+				f.read((char*)&tag, 1);
+				if ((tag & 0xFF) == 0xEE)
+				{
+					f.read((char*)&tag, 1);
+					if ((tag & 0xFF) == 0xE0)
+					{
+						f.read((char*)&tag, 1);
+						if ((tag & 0xFF) == 0x00)
+						{
+							break;
+						}
+					}
+				}
+			}
+		}
+		f.read((char*)&Inf_time, 4);
+		for (int i = 0; i < 512; i++)
+		{
+			f.read((char*)&data_bulk, 66 * 2);
+			for (int ii = 0; ii < 64; ii++)
+			{
+				adc = data_bulk + ii + 2;
+				adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+			}
+		}
+		if (h1)delete h1;
+		h1 = new TH1F("wave", "Signal for random", 512, 0, 512);
+		for (int i = 0; i < 512; i++)h1->Fill(i, adc_data[i_R_ch][i]);
+		//open ROOT viewer
+		if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+		//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+		view->ShowWindow(SW_SHOW);
+		view->FillHist(h1);
+		view->UpdateViewer();
+
+		f.close();
+		return;
+	}
+	else
+	{
+		return;
+	}
+
 }

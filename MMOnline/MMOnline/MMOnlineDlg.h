@@ -10,6 +10,8 @@
 #include "afxcmn.h"
 #include "TH1F.h"
 #include "Viewer.h"
+#include "Processing.h"
+#include <random>
 using namespace std;
 // CMMOnlineDlg 对话框
 class CMMOnlineDlg : public CDialogEx
@@ -34,12 +36,23 @@ protected:
 	CString m_FileExt;
 	TFile *root_file;
 	TTree*t;
+	TTree*output;
 	float baseline[64];
+	float ped_data[128];
 	float peak[64];
 	int ptime[64];
 	float rtime[64];
 	int det_ch;
 	Viewer*view;
+	CString s_X_F_th;
+	CString s_X_S_th;
+	CString s_Y_F_th;
+	CString s_Y_S_th;
+	CString s_T_th;
+	CString s_NSample;
+	CString s_R_ch;
+
+	CButton	m_chkChEnable;
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
@@ -50,8 +63,23 @@ public:
 	// 处理RAW的程序
 	int RawDataProcess();
 //	afx_msg void OnNMCustomdrawProgress1(NMHDR *pNMHDR, LRESULT *pResult);
-	CProgressCtrl m_Progress;
+	CProgressCtrl* m_Progress;
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	int RootProcessing();
+	TH1F *h1;
+	TH2F *h2;
+	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedButton4();
+	afx_msg void OnBnClickedButton5();
+	afx_msg void OnBnClickedButton10();
+	afx_msg void OnBnClickedButton11();
+	afx_msg void OnBnClickedButton12();
+//	afx_msg void OnChangeEdit2();
+	afx_msg void OnBnClickedButton7();
+	int PedProcessing();
+	afx_msg void OnBnClickedButton8();
+	afx_msg void OnBnClickedButton9();
+	afx_msg void OnBnClickedButton6();
 };

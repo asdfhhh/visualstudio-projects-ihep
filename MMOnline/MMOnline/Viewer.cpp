@@ -15,7 +15,9 @@ Viewer::Viewer(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DIALOG1, pParent)
 {
 	daq_canvas = NULL;
-	drawing = new TH1F("test", "test", 200, 0, 600000);
+	drawing1 = 0;
+	drawing2 = 0;
+
 }
 
 Viewer::~Viewer()
@@ -31,6 +33,11 @@ void Viewer::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(Viewer, CDialogEx)
 	ON_WM_SIZING()
 	ON_WM_TIMER()
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
 
 
@@ -69,7 +76,8 @@ BOOL Viewer::OnInitDialog()
 		gStyle->SetCanvasColor(33);
 		gStyle->SetFrameFillColor(1);*/
 	}
-	SetTimer(0, 1000, NULL);//set the Drawing timer
+	SetTimer(0, 1000, NULL);//no use
+	SetTimer(1, 100, NULL);//ROOT signal processing
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
 }
@@ -90,17 +98,26 @@ void Viewer::OnSizing(UINT fwSide, LPRECT pRect)
 }
 
 
-int Viewer::FillHist(float data)
+int Viewer::FillHist(TH1F* data)
 {
-	drawing->Fill(data);
+	drawing1 = data;
+	daq_canvas->cd();
+	UpdateViewer();
+	if (drawing1)drawing1->Draw();
 	return 0;
 }
 
+int Viewer::FillHist(TH2F* data)
+{
+	drawing2 = data;
+	daq_canvas->cd();
+	UpdateViewer();
+	if (drawing2)drawing2->Draw();
+	return 0;
+}
 
 int Viewer::UpdateViewer()
 {
-	daq_canvas->cd();
-	drawing->Draw();
 	daq_canvas->Modified();
 	daq_canvas->Update();
 	return 0;
@@ -114,9 +131,82 @@ void Viewer::OnTimer(UINT_PTR nIDEvent)
 	switch (nIDEvent)
 	{
 	case 0:
-		UpdateViewer();
+		//UpdateViewer();
+		break;
+	case 1:
+		OnRefreshTimer();
 		break;
 	default:
 		break;
 	}
+}
+
+
+void Viewer::OnRefreshTimer()
+{
+	// Process Root events when a timer message is received
+	gApplication->StartIdleing();
+	gSystem->InnerLoop();
+	gApplication->StopIdleing();
+}
+
+
+void Viewer::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CDialogEx::OnMouseMove(nFlags, point);
+	// Handle Mouse move events
+
+	if (!daq_canvas) return;
+
+	if (nFlags & MK_LBUTTON )
+		daq_canvas->HandleInput(kButton1Motion, point.x, point.y);
+	else
+		daq_canvas->HandleInput(kMouseMotion, point.x, point.y);
+	UpdateViewer();
+}
+
+
+void Viewer::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CDialogEx::OnLButtonDown(nFlags, point);
+	// Handle Mouse Left button down event
+
+	if (daq_canvas) daq_canvas->HandleInput(kButton1Down, point.x, point.y);
+	UpdateViewer();
+}
+
+
+void Viewer::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CDialogEx::OnRButtonDown(nFlags, point);
+	// Handle Mouse Right button down event
+
+	if (daq_canvas) daq_canvas->HandleInput(kButton3Down, point.x, point.y);
+	UpdateViewer();
+}
+
+
+void Viewer::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CDialogEx::OnLButtonUp(nFlags, point);
+	if (daq_canvas) daq_canvas->HandleInput(kButton1Up, point.x, point.y);
+	UpdateViewer();
+}
+
+
+void Viewer::OnRButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CDialogEx::OnRButtonUp(nFlags, point);
+	if (daq_canvas) daq_canvas->HandleInput(kButton3Up, point.x, point.y);
+	UpdateViewer();
 }
