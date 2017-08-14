@@ -69,6 +69,9 @@ BEGIN_MESSAGE_MAP(CMMOnlineDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON8, &CMMOnlineDlg::OnBnClickedButton8)
 	ON_BN_CLICKED(IDC_BUTTON9, &CMMOnlineDlg::OnBnClickedButton9)
 	ON_BN_CLICKED(IDC_BUTTON6, &CMMOnlineDlg::OnBnClickedButton6)
+	ON_EN_CHANGE(IDC_EDIT1, &CMMOnlineDlg::OnEnChangeEdit1)
+	ON_EN_CHANGE(IDC_EDIT7, &CMMOnlineDlg::OnEnChangeEdit7)
+	ON_BN_CLICKED(IDC_CHECK1, &CMMOnlineDlg::OnBnClickedCheck1)
 END_MESSAGE_MAP()
 
 
@@ -139,8 +142,9 @@ void CMMOnlineDlg::OnBnClickedButton1()
 	{
 		m_FilePath = dlg.GetPathName();////////取出文件路径 
 		m_FileExt = dlg.GetFileExt();
-		UpdateData(FALSE);
+		//UpdateData(FALSE);
 	}
+
 	if (m_FileExt == _T("dat"))RawDataProcess();
 	else if (m_FileExt == _T("root"))
 	{
@@ -634,7 +638,7 @@ void CMMOnlineDlg::OnBnClickedButton8()
 	//写入文件
 
 	CString tmp_name = m_FilePath;
-	tmp_name.TrimRight(_T(".root"));
+	tmp_name.TrimRight(_T(".dat"));
 	tmp_name += _T(".ped");
 
 	char *aux_string = (char*)tmp_name.GetBuffer(0);
@@ -783,4 +787,95 @@ void CMMOnlineDlg::OnBnClickedButton6()
 		return;
 	}
 
+}
+
+
+void CMMOnlineDlg::OnEnChangeEdit1()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	UpdateData(TRUE);
+	int i_NSample = _tstoi(s_NSample);
+	if (i_NSample > 512) 
+	{
+		AfxMessageBox(_T("Error! Input NUumber must less than 512!"));
+		s_NSample = _T("512");
+		UpdateData(FALSE);
+		return;
+	}
+	if (i_NSample < 1)
+	{
+		AfxMessageBox(_T("Error! Input NUumber must biger than 0!"));
+		s_NSample = _T("1");
+		UpdateData(FALSE);
+		return;
+	}
+	return;
+}
+
+
+void CMMOnlineDlg::OnEnChangeEdit7()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	UpdateData(TRUE);
+	int i_R_ch = _tstoi(s_R_ch);
+	if (i_R_ch > 128)
+	{
+		AfxMessageBox(_T("Error! Input NUumber must less than 128!"));
+		s_R_ch = _T("127");
+		UpdateData(FALSE);
+		return;
+	}
+	if (i_R_ch < 1)
+	{
+		AfxMessageBox(_T("Error! Input NUumber must biger than 0!"));
+		s_R_ch = _T("0");
+		UpdateData(FALSE);
+		return;
+	}
+	return;
+}
+
+
+void CMMOnlineDlg::OnBnClickedCheck1()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+	int ext_ped = m_chkChEnable.GetCheck();
+	if (ext_ped)
+	{
+		CFileDialog dlg(TRUE,
+			_T(".ped"),
+			NULL,
+			OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT | OFN_ENABLESIZING,
+			_T("pedestal DATA (*.ped)|*.ped||"),
+			NULL);
+		if (dlg.DoModal() == IDOK)
+		{
+			m_FilePath = dlg.GetPathName();////////取出文件路径 
+			m_FileExt = dlg.GetFileExt();
+			UpdateData(FALSE);
+		}
+		if (!m_FilePath.IsEmpty())
+		{
+			if (m_FileExt == _T("ped"))PedProcessing();
+			else return;
+		}
+		else
+		{
+			m_chkChEnable.SetCheck(0);
+			UpdateData(FALSE);
+			return;
+		}
+	}
+	else return;
 }
