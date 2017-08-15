@@ -145,7 +145,11 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 		//UpdateData(FALSE);
 	}
 
-	if (m_FileExt == _T("dat"))RawDataProcess();
+	if (m_FileExt == _T("dat"))
+	{
+		RawDataProcess();
+		GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
+	}
 	else if (m_FileExt == _T("root"))
 	{
 		CString tmp_name = m_FilePath;
@@ -155,7 +159,9 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 		aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
 		root_file = new TFile(aux_string);
 		t = (TTree*)root_file->Get("ana");
+		GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
 	}
+	
 }
 
 
@@ -714,7 +720,7 @@ void CMMOnlineDlg::OnBnClickedSnapShoot()
 {
 	// TODO: Add your control notification handler code here
 	UpdateData(TRUE);
-
+	if (!(m_FileExt == _T("dat")))return;
 	UShort_t adc_data[64][512];
 	int Inf_time;
 	int tag;
