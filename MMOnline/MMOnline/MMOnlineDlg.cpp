@@ -54,21 +54,21 @@ void CMMOnlineDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CMMOnlineDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, &CMMOnlineDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CMMOnlineDlg::OnBnClickedOpenFile)
 	//	ON_NOTIFY(NM_CUSTOMDRAW, IDC_PROGRESS1, &CMMOnlineDlg::OnNMCustomdrawProgress1)
 	ON_BN_CLICKED(IDOK, &CMMOnlineDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CMMOnlineDlg::OnBnClickedCancel)
-	ON_BN_CLICKED(IDC_BUTTON2, &CMMOnlineDlg::OnBnClickedButton2)
-	ON_BN_CLICKED(IDC_BUTTON3, &CMMOnlineDlg::OnBnClickedButton3)
-	ON_BN_CLICKED(IDC_BUTTON4, &CMMOnlineDlg::OnBnClickedButton4)
-	ON_BN_CLICKED(IDC_BUTTON5, &CMMOnlineDlg::OnBnClickedButton5)
-	ON_BN_CLICKED(IDC_BUTTON10, &CMMOnlineDlg::OnBnClickedButton10)
-	ON_BN_CLICKED(IDC_BUTTON11, &CMMOnlineDlg::OnBnClickedButton11)
-	ON_BN_CLICKED(IDC_BUTTON12, &CMMOnlineDlg::OnBnClickedButton12)
-	ON_BN_CLICKED(IDC_BUTTON7, &CMMOnlineDlg::OnBnClickedButton7)
-	ON_BN_CLICKED(IDC_BUTTON8, &CMMOnlineDlg::OnBnClickedButton8)
-	ON_BN_CLICKED(IDC_BUTTON9, &CMMOnlineDlg::OnBnClickedButton9)
-	ON_BN_CLICKED(IDC_BUTTON6, &CMMOnlineDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_BUTTON2, &CMMOnlineDlg::OnBnClickedDrawEX)
+	ON_BN_CLICKED(IDC_BUTTON3, &CMMOnlineDlg::OnBnClickedDrawPX)
+	ON_BN_CLICKED(IDC_BUTTON4, &CMMOnlineDlg::OnBnClickedDrawSizeX)
+	ON_BN_CLICKED(IDC_BUTTON5, &CMMOnlineDlg::OnBnClickedDrawXY)
+	ON_BN_CLICKED(IDC_BUTTON10, &CMMOnlineDlg::OnBnClickedDrawEY)
+	ON_BN_CLICKED(IDC_BUTTON11, &CMMOnlineDlg::OnBnClickedDrawPY)
+	ON_BN_CLICKED(IDC_BUTTON12, &CMMOnlineDlg::OnBnClickedDrawSizeY)
+	ON_BN_CLICKED(IDC_BUTTON7, &CMMOnlineDlg::OnBnClickedOpenPed)
+	ON_BN_CLICKED(IDC_BUTTON8, &CMMOnlineDlg::OnBnClickedSavePed)
+	ON_BN_CLICKED(IDC_BUTTON9, &CMMOnlineDlg::OnBnClickedDrawPed)
+	ON_BN_CLICKED(IDC_BUTTON6, &CMMOnlineDlg::OnBnClickedSnapShoot)
 	ON_EN_CHANGE(IDC_EDIT1, &CMMOnlineDlg::OnEnChangeEdit1)
 	ON_EN_CHANGE(IDC_EDIT7, &CMMOnlineDlg::OnEnChangeEdit7)
 	ON_BN_CLICKED(IDC_CHECK1, &CMMOnlineDlg::OnBnClickedCheck1)
@@ -129,7 +129,7 @@ HCURSOR CMMOnlineDlg::OnQueryDragIcon()
 
 
 
-void CMMOnlineDlg::OnBnClickedButton1()
+void CMMOnlineDlg::OnBnClickedOpenFile()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CFileDialog dlg(TRUE,
@@ -462,7 +462,7 @@ int CMMOnlineDlg::RootProcessing()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton2()
+void CMMOnlineDlg::OnBnClickedDrawEX()
 {
 	// TODO: Add your control notification handler code here
 	//energy spectrum
@@ -479,7 +479,7 @@ void CMMOnlineDlg::OnBnClickedButton2()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton3()
+void CMMOnlineDlg::OnBnClickedDrawPX()
 {
 	// TODO: Add your control notification handler code here
 	//X distribution 
@@ -496,7 +496,7 @@ void CMMOnlineDlg::OnBnClickedButton3()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton4()
+void CMMOnlineDlg::OnBnClickedDrawSizeX()
 {
 	// TODO: Add your control notification handler code here
 	//X cluster size distribution
@@ -513,10 +513,11 @@ void CMMOnlineDlg::OnBnClickedButton4()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton5()
+void CMMOnlineDlg::OnBnClickedDrawXY()
 {
 	// TODO: Add your control notification handler code here
 	//X-Y distribution
+	if (!output)return;
 	//open ROOT viewer
 	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
 	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
@@ -529,7 +530,7 @@ void CMMOnlineDlg::OnBnClickedButton5()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton10()
+void CMMOnlineDlg::OnBnClickedDrawEY()
 {
 	// TODO: Add your control notification handler code here
 	//energy spectrum
@@ -546,7 +547,7 @@ void CMMOnlineDlg::OnBnClickedButton10()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton11()
+void CMMOnlineDlg::OnBnClickedDrawPY()
 {
 	// TODO: Add your control notification handler code here
 	//Y distribution 
@@ -563,7 +564,7 @@ void CMMOnlineDlg::OnBnClickedButton11()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton12()
+void CMMOnlineDlg::OnBnClickedDrawSizeY()
 {
 	// TODO: Add your control notification handler code here
 	// TODO: Add your control notification handler code here
@@ -592,7 +593,7 @@ void CMMOnlineDlg::OnBnClickedButton12()
 //}
 
 
-void CMMOnlineDlg::OnBnClickedButton7()
+void CMMOnlineDlg::OnBnClickedOpenPed()
 {
 	// TODO: Add your control notification handler code here
 	CFileDialog dlg(TRUE,
@@ -631,7 +632,7 @@ int CMMOnlineDlg::PedProcessing()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton8()
+void CMMOnlineDlg::OnBnClickedSavePed()
 {
 	// TODO: Add your control notification handler code here
 	if (!root_file)return;
@@ -693,7 +694,7 @@ void CMMOnlineDlg::OnBnClickedButton8()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton9()
+void CMMOnlineDlg::OnBnClickedDrawPed()
 {
 	// TODO: Add your control notification handler code here
 	//open ROOT viewer
@@ -709,7 +710,7 @@ void CMMOnlineDlg::OnBnClickedButton9()
 }
 
 
-void CMMOnlineDlg::OnBnClickedButton6()
+void CMMOnlineDlg::OnBnClickedSnapShoot()
 {
 	// TODO: Add your control notification handler code here
 	UpdateData(TRUE);
@@ -802,14 +803,14 @@ void CMMOnlineDlg::OnEnChangeEdit1()
 	int i_NSample = _tstoi(s_NSample);
 	if (i_NSample > 512) 
 	{
-		AfxMessageBox(_T("Error! Input NUumber must less than 512!"));
+		AfxMessageBox(_T("Error! Input Number must less than 512!"));
 		s_NSample = _T("512");
 		UpdateData(FALSE);
 		return;
 	}
 	if (i_NSample < 1)
 	{
-		AfxMessageBox(_T("Error! Input NUumber must biger than 0!"));
+		AfxMessageBox(_T("Error! Input Number must biger than 0!"));
 		s_NSample = _T("1");
 		UpdateData(FALSE);
 		return;
@@ -830,14 +831,14 @@ void CMMOnlineDlg::OnEnChangeEdit7()
 	int i_R_ch = _tstoi(s_R_ch);
 	if (i_R_ch > 128)
 	{
-		AfxMessageBox(_T("Error! Input NUumber must less than 128!"));
+		AfxMessageBox(_T("Error! Input Number must less than 128!"));
 		s_R_ch = _T("127");
 		UpdateData(FALSE);
 		return;
 	}
 	if (i_R_ch < 1)
 	{
-		AfxMessageBox(_T("Error! Input NUumber must biger than 0!"));
+		AfxMessageBox(_T("Error! Input Number must biger than 0!"));
 		s_R_ch = _T("0");
 		UpdateData(FALSE);
 		return;

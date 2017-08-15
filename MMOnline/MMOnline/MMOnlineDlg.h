@@ -59,7 +59,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedOpenFile();
 	// 处理RAW的程序
 	int RawDataProcess();
 //	afx_msg void OnNMCustomdrawProgress1(NMHDR *pNMHDR, LRESULT *pResult);
@@ -69,19 +69,19 @@ public:
 	int RootProcessing();
 	TH1F *h1;
 	TH2F *h2;
-	afx_msg void OnBnClickedButton2();
-	afx_msg void OnBnClickedButton3();
-	afx_msg void OnBnClickedButton4();
-	afx_msg void OnBnClickedButton5();
-	afx_msg void OnBnClickedButton10();
-	afx_msg void OnBnClickedButton11();
-	afx_msg void OnBnClickedButton12();
+	afx_msg void OnBnClickedDrawEX();
+	afx_msg void OnBnClickedDrawPX();
+	afx_msg void OnBnClickedDrawSizeX();
+	afx_msg void OnBnClickedDrawXY();
+	afx_msg void OnBnClickedDrawEY();
+	afx_msg void OnBnClickedDrawPY();
+	afx_msg void OnBnClickedDrawSizeY();
 //	afx_msg void OnChangeEdit2();
-	afx_msg void OnBnClickedButton7();
+	afx_msg void OnBnClickedOpenPed();
 	int PedProcessing();
-	afx_msg void OnBnClickedButton8();
-	afx_msg void OnBnClickedButton9();
-	afx_msg void OnBnClickedButton6();
+	afx_msg void OnBnClickedSavePed();
+	afx_msg void OnBnClickedDrawPed();
+	afx_msg void OnBnClickedSnapShoot();
 	afx_msg void OnEnChangeEdit1();
 	afx_msg void OnEnChangeEdit7();
 	afx_msg void OnBnClickedCheck1();
