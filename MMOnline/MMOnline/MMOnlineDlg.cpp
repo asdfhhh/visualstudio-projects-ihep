@@ -160,6 +160,7 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 		root_file = new TFile(aux_string);
 		t = (TTree*)root_file->Get("ana");
 		GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
+		GetDlgItem(IDC_BUTTON6)->EnableWindow(0);
 	}
 	
 }
