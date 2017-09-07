@@ -170,8 +170,8 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 int CMMOnlineDlg::RawDataProcess()
 {
 	UpdateData(TRUE);
-
-	UShort_t adc_data[64][512];
+	int miniloop = (ASIC_CH / 64) - 1;
+	UShort_t adc_data[ASIC_CH][512];
 	int Inf_time;
 	int tag;
 	float f_T_th = _tstof(s_T_th);
@@ -195,11 +195,10 @@ int CMMOnlineDlg::RawDataProcess()
 		P_GUI->ShowWindow(SW_SHOW);
 		m_Progress = P_GUI->GetCP();
 		t = new TTree("ana", "the results of analysis");
-		t->Branch("baseline", baseline, "baseline[64]/F");
-		t->Branch("peak", peak, "peak[64]/F");
-		t->Branch("ptime", ptime, "ptime[64]/I");
-		t->Branch("rtime", rtime, "rtime[64]/F");
-		t->Branch("det_ch", &det_ch, "det_ch/I");
+		t->Branch("baseline", baseline, "baseline[128]/F");
+		t->Branch("peak", peak, "peak[128]/F");
+		t->Branch("ptime", ptime, "ptime[128]/I");
+		t->Branch("rtime", rtime, "rtime[128]/F");
 
 		//TH1F*h1=new TH1F("test","test",512,0,512);
 		int count = 0;
@@ -227,84 +226,124 @@ int CMMOnlineDlg::RawDataProcess()
 						if ((tag & 0xFF) == 0x00)
 						{
 							f.read((char*)&Inf_time, 4);
-							for (int i = 0; i < 512; i++)
+							if (miniloop)
 							{
-								f.read((char*)&data_bulk, 66 * 2);
-								for (int ii = 0; ii < 64; ii++)
+								for (int i = 0; i < 512; i++)
 								{
-									adc = data_bulk + ii + 2;
-									adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+									f.read((char*)&data_bulk, 66 * 2);
+									for (int ii = 0; ii < 64; ii++)
+									{
+										adc = data_bulk + ii + 2;
+										adc_data[ii+ ((ASIC_CH / 64)-miniloop-1)*64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+									}
 								}
-							}
-							det_ch = *data_bulk;
-
-							f.read((char*)&tag, 2);
-							if ((tag & 0xFFFF) == 0xFFFF)
-							{
-								count++;
-							}
-							else if ((tag & 0xFFFF) == 0xEEEE)
-							{
-								adc_data[63][511] = adc_data[63][510];
-								f.seekg(-2, ios::cur);
-								count++;
-								E_count++;
-								continue;
-							}
-							else if ((tag & 0xFFFF) == 0xFFBC)
-							{
-								E_count++;
-								continue;
-							}
-							else
-							{
-								if (!f.eof())
+								f.read((char*)&tag, 2);
+								if ((tag & 0xFFFF) == 0xFFFF)
+								{
+									count++;
+								}
+								else if ((tag & 0xFFFF) == 0xEEEE)
+								{
+									adc_data[((ASIC_CH / 64) - miniloop) * 64-1][511] = adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][510];
+									f.seekg(-2, ios::cur);
+									count++;
+									E_count++;
+									continue;
+								}
+								else if ((tag & 0xFFFF) == 0xFFBC)
 								{
 									E_count++;
 									continue;
 								}
-							}
-							//get the information
-							for (int j = 0; j < 64; j++)
-							{
-								if (ext_ped)
+								else
 								{
-									if (det_ch == 208)baseline[j] = ped_data[j];
-									else if (det_ch == 704)baseline[j] = ped_data[j + 64];
+									if (!f.eof())
+									{
+										E_count++;
+										continue;
+									}
+								}
+								miniloop--;
+							}
+							else //end of a event
+							{
+								for (int i = 0; i < 512; i++)
+								{
+									f.read((char*)&data_bulk, 66 * 2);
+									for (int ii = 0; ii < 64; ii++)
+									{
+										adc = data_bulk + ii + 2;
+										adc_data[ii+ ((ASIC_CH / 64) - miniloop - 1) * 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+									}
+								}
+								f.read((char*)&tag, 2);
+								if ((tag & 0xFFFF) == 0xFFFF)
+								{
+									count++;
+								}
+								else if ((tag & 0xFFFF) == 0xEEEE)
+								{
+									adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][511] = adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][510];
+									f.seekg(-2, ios::cur);
+									count++;
+									E_count++;
+									continue;
+								}
+								else if ((tag & 0xFFFF) == 0xFFBC)
+								{
+									E_count++;
+									continue;
 								}
 								else
 								{
-									baseline[j] = 0;
-									for (int jj = 0; jj < i_NSample; jj++)
+									if (!f.eof())
 									{
-										baseline[j] += adc_data[j][jj];
-									}
-									baseline[j] = baseline[j] / i_NSample;
-								}
-								ptime[j] = 0;
-								rtime[j] = 0;
-								peak[j] = 0;
-								for (int jj = 0; jj < 512; jj++)
-								{
-									if (peak[j] < (adc_data[j][jj] - baseline[j]))
-									{
-										peak[j] = adc_data[j][jj] - baseline[j];
-										ptime[j] = jj;
+										E_count++;
+										continue;
 									}
 								}
-								for (int jj = ptime[j]; jj > 0; jj--)
+								//get the information
+								for (int j = 0; j < ASIC_CH; j++)
 								{
-									rtime[j] = jj;
-									if ((adc_data[j][jj] - baseline[j]) < (peak[j] * f_T_th))break;
+									if (ext_ped)
+									{
+										baseline[j] = ped_data[j];
+									}
+									else
+									{
+										baseline[j] = 0;
+										for (int jj = 0; jj < i_NSample; jj++)
+										{
+											baseline[j] += adc_data[j][jj];
+										}
+										baseline[j] = baseline[j] / i_NSample;
+									}
+									ptime[j] = 0;
+									rtime[j] = 0;
+									peak[j] = 0;
+									for (int jj = 0; jj < 512; jj++)
+									{
+										if (peak[j] < (adc_data[j][jj] - baseline[j]))
+										{
+											peak[j] = adc_data[j][jj] - baseline[j];
+											ptime[j] = jj;
+										}
+									}
+									for (int jj = ptime[j]; jj > 0; jj--)
+									{
+										rtime[j] = jj;
+										if ((adc_data[j][jj] - baseline[j]) < (peak[j] * f_T_th))break;
+									}
 								}
+								t->Fill();
+								miniloop = (ASIC_CH / 64) - 1;
 							}
-							t->Fill();
 						}
 					}
 				}
 			}
 		}
-
+		//save the file
 		tmp_name = m_FilePath;
 		tmp_name.TrimRight(_T(".dat"));
 		tmp_name += _T(".root");
@@ -322,7 +361,7 @@ int CMMOnlineDlg::RawDataProcess()
 	{
 		return -1;
 	}
-
+	free(adc_data);
 }
 
 
@@ -357,7 +396,7 @@ void CMMOnlineDlg::OnBnClickedCancel()
 int CMMOnlineDlg::RootProcessing()
 {
 	UpdateData(TRUE);
-
+	bool x_flag = true;
 	int count = 0;
 	float enex = 0;
 	float eney = 0;
@@ -375,7 +414,6 @@ int CMMOnlineDlg::RootProcessing()
 	output->Branch("size_py", &size_py, "size_py/I");
 
 	int total = t->GetEntries();
-	t->SetBranchAddress("det_ch", &det_ch);
 	t->SetBranchAddress("baseline", &baseline);
 	t->SetBranchAddress("peak", &peak);
 	t->SetBranchAddress("ptime", &ptime);
@@ -397,68 +435,76 @@ int CMMOnlineDlg::RootProcessing()
 	{
 		t->GetEntry(i);
 		m_Progress->StepIt();
-		int max_p = 0;
-		for (int j = 0; j < 64; j++)
+		int max_p;
+		if (x_flag)
 		{
-			max_p = (peak[max_p] > peak[j]) ? max_p : j;
-		}
-		if (det_ch == 208)
-		{
+			max_p = 0;
+			for (int j = 0; j < 64; j++)
+			{
+				max_p = (peak[max_p] > peak[j*2]) ? max_p : j*2;
+			}
 			if (peak[max_p] > i_X_S_th)
 			{
-				int j = 1;
+				int j = 2;
 				size_px = 1;
 
 				enex = peak[max_p];
-				posx = enex*max_p;
+				posx = enex*max_p/2;
 
 				while (((max_p - j) > -1) && (peak[max_p - j] > i_X_F_th))
 				{
 					enex += peak[max_p - j];
-					posx += peak[max_p - j] * (max_p - j);
-					j++;
+					posx += peak[max_p - j] * (max_p - j)/2;
+					j = j + 2;
 					size_px++;
 				}
-				j = 1;
-				while (((max_p + j) < 64) && (peak[max_p + j] > i_X_F_th))
+				j = 2;
+				while (((max_p + j) < ASIC_CH) && (peak[max_p + j] > i_X_F_th))
 				{
 					enex += peak[max_p + j];
-					posx += peak[max_p + j] * (max_p + j);
-					j++;
+					posx += peak[max_p + j] * (max_p + j)/2;
+					j = j + 2;
 					size_px++;
 				}
 				posx = posx / enex;
 			}
+			x_flag = false;
 		}
-		else if (det_ch == 704)
+		else
 		{
+			max_p = 1;
+			for (int j = 0; j < 64; j++)
+			{
+				max_p = (peak[max_p] > peak[j*2+1]) ? max_p : j*2+1;
+			}
 			if (peak[max_p] > i_Y_S_th)
 			{
-				int j = 1;
+				int j = 2;
 				size_py = 1;
 
 				eney = peak[max_p];
-				posy = eney*max_p;
+				posy = eney*(max_p-1) / 2;
 
 				while (((max_p - j) > -1) && (peak[max_p - j] > i_Y_F_th))
 				{
 					eney += peak[max_p - j];
-					posy += peak[max_p - j] * (max_p - j);
-					j++;
+					posy += peak[max_p - j] * (max_p - 1 - j) / 2;
+					j = j + 2;
 					size_py++;
 				}
-				j = 1;
-				while (((max_p + j) < 64) && (peak[max_p + j] > i_Y_F_th))
+				j = 2;
+				while (((max_p + j) < ASIC_CH) && (peak[max_p + j] > i_Y_F_th))
 				{
 					eney += peak[max_p + j];
-					posy += peak[max_p + j] * (max_p + j);
-					j++;
+					posy += peak[max_p + j] * (max_p - 1 + j) / 2;
+					j = j + 2;
 					size_py++;
 				}
 				posy = posy / eney;
+				output->Fill();
+				count++;
+				x_flag = true;
 			}
-			output->Fill();
-			count++;
 		}
 	}
 	P_GUI->DestroyWindow();
@@ -630,7 +676,7 @@ int CMMOnlineDlg::PedProcessing()
 	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
 
 	ifstream f(aux_string);
-	for (int i = 0; i < 128; i++)
+	for (int i = 0; i < ASIC_CH; i++)
 	{
 		f >> ped_data[i];
 	}
@@ -658,7 +704,6 @@ void CMMOnlineDlg::OnBnClickedSavePed()
 
 	int total = t->GetEntries();
 	t->SetBranchAddress("baseline", &baseline);
-	t->SetBranchAddress("det_ch", &det_ch);
 
 	Processing *P_GUI = new Processing(this);
 	if (P_GUI->GetSafeHwnd() == NULL)P_GUI->Create(MAKEINTRESOURCE(IDD_DIALOG2), this);
@@ -668,30 +713,17 @@ void CMMOnlineDlg::OnBnClickedSavePed()
 	m_Progress->SetRange(0, total);
 	m_Progress->SetPos(0);
 	m_Progress->SetStep(1);
-	for (int i = 0; i < 128; i++)ped_data[i] = 0;
+	for (int i = 0; i < ASIC_CH; i++)ped_data[i] = 0;
 	for (int i = 1; i <= total; i++)
 	{
 		t->GetEntry(i);
 		m_Progress->StepIt();
-		if (det_ch == 208)
-		{
-			for (int j = 0; j < 64; j++)
-			{
-				ped_data[j] += baseline[j];
-			}
-		}
-		else if (det_ch == 704)
-		{
-			for (int j = 0; j < 64; j++)
-			{
-				ped_data[j + 64] += baseline[j];
-			}
-		}
+		for(int j;j<ASIC_CH;j++)ped_data[j] += baseline[j];
 	}
 	P_GUI->DestroyWindow();
 	delete P_GUI;
 
-	for (int i = 0; i < 128; i++)
+	for (int i = 0; i < ASIC_CH; i++)
 	{
 		ped_data[i] = ped_data[i] * 2 / total;
 		f << ped_data[i] << endl;

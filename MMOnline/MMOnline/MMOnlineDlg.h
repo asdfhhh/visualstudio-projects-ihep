@@ -12,6 +12,8 @@
 #include "Viewer.h"
 #include "Processing.h"
 #include <random>
+
+#define ASIC_CH 128
 using namespace std;
 // CMMOnlineDlg ¶Ô»°¿ò
 class CMMOnlineDlg : public CDialogEx
@@ -37,12 +39,11 @@ protected:
 	TFile *root_file;
 	TTree*t;
 	TTree*output;
-	float baseline[64];
-	float ped_data[128];
-	float peak[64];
-	int ptime[64];
-	float rtime[64];
-	int det_ch;
+	float baseline[ASIC_CH];
+	float ped_data[ASIC_CH];
+	float peak[ASIC_CH];
+	int ptime[ASIC_CH];
+	float rtime[ASIC_CH];
 	Viewer*view;
 	CString s_X_F_th;
 	CString s_X_S_th;
