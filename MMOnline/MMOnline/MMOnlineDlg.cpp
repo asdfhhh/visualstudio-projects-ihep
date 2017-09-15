@@ -46,7 +46,7 @@ void CMMOnlineDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT5, s_Y_F_th);
 	DDX_Text(pDX, IDC_EDIT6, s_Y_S_th);
 	DDX_Text(pDX, IDC_EDIT7, s_R_ch);
-
+	DDX_Text(pDX, IDC_EDIT9, cmd_test);
 	DDX_Control(pDX, IDC_CHECK1, m_chkChEnable);
 
 }
@@ -72,6 +72,8 @@ BEGIN_MESSAGE_MAP(CMMOnlineDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_EDIT1, &CMMOnlineDlg::OnEnChangeEdit1)
 	ON_EN_CHANGE(IDC_EDIT7, &CMMOnlineDlg::OnEnChangeEdit7)
 	ON_BN_CLICKED(IDC_CHECK1, &CMMOnlineDlg::OnBnClickedCheck1)
+	ON_BN_CLICKED(IDC_BUTTON13, &CMMOnlineDlg::OnBnClickedButton13)
+	ON_BN_CLICKED(IDC_BUTTON14, &CMMOnlineDlg::OnBnClickedButton14)
 END_MESSAGE_MAP()
 
 
@@ -162,7 +164,7 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 		GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
 		GetDlgItem(IDC_BUTTON6)->EnableWindow(0);
 	}
-	
+
 }
 
 
@@ -234,7 +236,7 @@ int CMMOnlineDlg::RawDataProcess()
 									for (int ii = 0; ii < 64; ii++)
 									{
 										adc = data_bulk + ii + 2;
-										adc_data[ii+ ((ASIC_CH / 64)-miniloop-1)*64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+										adc_data[ii + ((ASIC_CH / 64) - miniloop - 1) * 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
 									}
 								}
 								f.read((char*)&tag, 2);
@@ -244,7 +246,7 @@ int CMMOnlineDlg::RawDataProcess()
 								}
 								else if ((tag & 0xFFFF) == 0xEEEE)
 								{
-									adc_data[((ASIC_CH / 64) - miniloop) * 64-1][511] = adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][510];
+									adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][511] = adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][510];
 									f.seekg(-2, ios::cur);
 									count++;
 									E_count++;
@@ -273,7 +275,7 @@ int CMMOnlineDlg::RawDataProcess()
 									for (int ii = 0; ii < 64; ii++)
 									{
 										adc = data_bulk + ii + 2;
-										adc_data[ii+ ((ASIC_CH / 64) - miniloop - 1) * 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+										adc_data[ii + ((ASIC_CH / 64) - miniloop - 1) * 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
 									}
 								}
 								f.read((char*)&tag, 2);
@@ -323,9 +325,9 @@ int CMMOnlineDlg::RawDataProcess()
 									peak[j] = 0;
 									for (int jj = 0; jj < 512; jj++)
 									{
-										if (peak[j] < (adc_data[j][jj] - baseline[j]))
+										if (peak[j] < adc_data[j][jj])
 										{
-											peak[j] = adc_data[j][jj] - baseline[j];
+											peak[j] = adc_data[j][jj];
 											ptime[j] = jj;
 										}
 									}
@@ -404,6 +406,7 @@ int CMMOnlineDlg::RootProcessing()
 	int size_py = 0;
 	float posx = 0;
 	float posy = 0;
+	float peak_r[2][64];
 
 	output = new TTree("output", "the results of analysis");
 	output->Branch("posx", &posx, "posx/F");
@@ -436,68 +439,72 @@ int CMMOnlineDlg::RootProcessing()
 		t->GetEntry(i);
 		m_Progress->StepIt();
 		int max_p;
-		if (x_flag)
+		for (int j = 0; j < ASIC_CH; j++)
+		{
+			int tmp = j / 2;
+			if(j%2)peak_r[1][tmp] = peak[j] - baseline[j];
+			else peak_r[0][tmp] = peak[j] - baseline[j];
+		}
+		while (x_flag)
 		{
 			max_p = 0;
 			for (int j = 0; j < 64; j++)
 			{
-				max_p = (peak[max_p] > peak[j*2]) ? max_p : j*2;
+				max_p = (peak_r[0][max_p] > peak_r[0][j]) ? max_p : j;
 			}
-			if (peak[max_p] > i_X_S_th)
+			if (peak_r[0][max_p] > i_X_S_th)
 			{
-				int j = 2;
+				int j = 1;
 				size_px = 1;
 
-				enex = peak[max_p];
-				posx = enex*max_p/2;
-
-				while (((max_p - j) > -1) && (peak[max_p - j] > i_X_F_th))
+				enex = peak_r[0][max_p];
+				posx = enex*max_p;
+				while (((max_p - j) > -1) && (peak_r[0][max_p - j] > i_X_F_th))
 				{
-					enex += peak[max_p - j];
-					posx += peak[max_p - j] * (max_p - j)/2;
-					j = j + 2;
+					enex += peak_r[0][max_p - j];
+					posx += peak_r[0][max_p - j] * (max_p - j);
+					j++;
 					size_px++;
 				}
-				j = 2;
-				while (((max_p + j) < ASIC_CH) && (peak[max_p + j] > i_X_F_th))
+				j = 1;
+				while (((max_p + j) < 64) && (peak_r[0][max_p + j] > i_X_F_th))
 				{
-					enex += peak[max_p + j];
-					posx += peak[max_p + j] * (max_p + j)/2;
-					j = j + 2;
+					enex += peak_r[0][max_p + j];
+					posx += peak_r[0][max_p + j] * (max_p + j);
+					j++;
 					size_px++;
 				}
 				posx = posx / enex;
 			}
 			x_flag = false;
 		}
-		else
 		{
-			max_p = 1;
+			max_p = 0;
 			for (int j = 0; j < 64; j++)
 			{
-				max_p = (peak[max_p] > peak[j*2+1]) ? max_p : j*2+1;
+				max_p = (peak_r[1][max_p] > peak_r[1][j]) ? max_p : j ;
 			}
-			if (peak[max_p] > i_Y_S_th)
+			if (peak_r[1][max_p] > i_Y_S_th)
 			{
-				int j = 2;
+				int j = 1;
 				size_py = 1;
 
-				eney = peak[max_p];
-				posy = eney*(max_p-1) / 2;
+				eney = peak_r[1][max_p];
+				posy = eney*max_p;
 
-				while (((max_p - j) > -1) && (peak[max_p - j] > i_Y_F_th))
+				while (((max_p - j) > -1) && (peak_r[1][max_p - j] > i_Y_F_th))
 				{
-					eney += peak[max_p - j];
-					posy += peak[max_p - j] * (max_p - 1 - j) / 2;
-					j = j + 2;
+					eney += peak_r[1][max_p - j];
+					posy += peak_r[1][max_p - j] * (max_p - j) ;
+					j++;
 					size_py++;
 				}
-				j = 2;
-				while (((max_p + j) < ASIC_CH) && (peak[max_p + j] > i_Y_F_th))
+				j = 1;
+				while (((max_p + j) < 64) && (peak_r[1][max_p + j] > i_Y_F_th))
 				{
-					eney += peak[max_p + j];
-					posy += peak[max_p + j] * (max_p - 1 + j) / 2;
-					j = j + 2;
+					eney += peak_r[1][max_p + j];
+					posy += peak_r[1][max_p + j] * (max_p + j);
+					j++;
 					size_py++;
 				}
 				posy = posy / eney;
@@ -509,8 +516,6 @@ int CMMOnlineDlg::RootProcessing()
 	}
 	P_GUI->DestroyWindow();
 	delete P_GUI;
-
-	output->Fill();
 	return count;
 }
 
@@ -718,7 +723,7 @@ void CMMOnlineDlg::OnBnClickedSavePed()
 	{
 		t->GetEntry(i);
 		m_Progress->StepIt();
-		for(int j;j<ASIC_CH;j++)ped_data[j] += baseline[j];
+		for (int j = 0; j < ASIC_CH; j++)ped_data[j] += baseline[j];
 	}
 	P_GUI->DestroyWindow();
 	delete P_GUI;
@@ -754,7 +759,7 @@ void CMMOnlineDlg::OnBnClickedSnapShoot()
 	// TODO: Add your control notification handler code here
 	UpdateData(TRUE);
 	if (!(m_FileExt == _T("dat")))return;
-	UShort_t adc_data[64][512];
+	UShort_t adc_data[512];
 	int Inf_time;
 	int tag;
 	float f_T_th = _tstof(s_T_th);
@@ -779,7 +784,8 @@ void CMMOnlineDlg::OnBnClickedSnapShoot()
 		std::uniform_int_distribution<int> distribution(0, file_size);
 		int number = distribution(generator);
 		f.seekg(number);
-		while (1)
+		bool loop_flag = true;
+		while (loop_flag)
 		{
 			f.read((char*)&tag, 1);
 			if ((tag & 0xFF) == 0xEE)
@@ -793,25 +799,26 @@ void CMMOnlineDlg::OnBnClickedSnapShoot()
 						f.read((char*)&tag, 1);
 						if ((tag & 0xFF) == 0x00)
 						{
-							break;
+							f.read((char*)&Inf_time, 4);
+							for (int i = 0; i < 512; i++)
+							{
+								f.read((char*)&data_bulk, 66 * 2);
+								if ((*data_bulk == 208 && i_R_ch < 64) || (*data_bulk == 704 && i_R_ch > 63))
+								{
+									if(i_R_ch<64)adc = data_bulk + i_R_ch + 2;
+									else adc = data_bulk + i_R_ch + 2 - 64;
+									adc_data[i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+									loop_flag = false;
+								}
+							}
 						}
 					}
 				}
 			}
 		}
-		f.read((char*)&Inf_time, 4);
-		for (int i = 0; i < 512; i++)
-		{
-			f.read((char*)&data_bulk, 66 * 2);
-			for (int ii = 0; ii < 64; ii++)
-			{
-				adc = data_bulk + ii + 2;
-				adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
-			}
-		}
 		if (h1)delete h1;
 		h1 = new TH1F("wave", "Signal for random", 512, 0, 512);
-		for (int i = 0; i < 512; i++)h1->Fill(i, adc_data[i_R_ch][i]);
+		for (int i = 0; i < 512; i++)h1->Fill(i, adc_data[i]);
 		//open ROOT viewer
 		if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
 		//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
@@ -840,7 +847,7 @@ void CMMOnlineDlg::OnEnChangeEdit1()
 	// TODO:  Add your control notification handler code here
 	UpdateData(TRUE);
 	int i_NSample = _tstoi(s_NSample);
-	if (i_NSample > 512) 
+	if (i_NSample > 512)
 	{
 		AfxMessageBox(_T("Error! Input Number must less than 512!"));
 		s_NSample = _T("512");
@@ -918,4 +925,36 @@ void CMMOnlineDlg::OnBnClickedCheck1()
 		}
 	}
 	else return;
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton13()
+{
+	// TODO: Add your control notification handler code here
+	// TODO: Add your control notification handler code here
+	//Y distribution 
+	if (!output)return;
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	output->Draw("enex+eney>>h1");
+	h1 = (TH1F*)gDirectory->Get("h1");
+	view->FillHist(h1);
+	view->UpdateViewer();
+}
+
+
+void CMMOnlineDlg::OnBnClickedButton14()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+	//Cstring2Char
+	CString tmp_name = cmd_test;
+	char *aux_string = (char*)tmp_name.GetBuffer(0);
+	long len = wcslen(tmp_name); //the length of "salut"
+	wcstombs(aux_string, tmp_name, len); //conversion to char *	
+	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
+	gROOT->ProcessLine(aux_string);
 }

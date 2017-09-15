@@ -10,6 +10,7 @@
 #include "afxcmn.h"
 #include "TH1F.h"
 #include "Viewer.h"
+#include "TROOT.h"
 #include "Processing.h"
 #include <random>
 
@@ -52,6 +53,7 @@ protected:
 	CString s_T_th;
 	CString s_NSample;
 	CString s_R_ch;
+	CString cmd_test;
 
 	CButton	m_chkChEnable;
 	// 生成的消息映射函数
@@ -86,4 +88,6 @@ public:
 	afx_msg void OnEnChangeEdit1();
 	afx_msg void OnEnChangeEdit7();
 	afx_msg void OnBnClickedCheck1();
+	afx_msg void OnBnClickedButton13();
+	afx_msg void OnBnClickedButton14();
 };
