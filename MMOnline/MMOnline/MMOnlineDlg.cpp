@@ -445,7 +445,7 @@ int CMMOnlineDlg::RootProcessing()
 			if(j%2)peak_r[1][tmp] = peak[j] - baseline[j];
 			else peak_r[0][tmp] = peak[j] - baseline[j];
 		}
-		while (x_flag)
+		if(x_flag)
 		{
 			max_p = 0;
 			for (int j = 0; j < 64; j++)
@@ -475,9 +475,10 @@ int CMMOnlineDlg::RootProcessing()
 					size_px++;
 				}
 				posx = posx / enex;
+				x_flag = false;
 			}
-			x_flag = false;
 		}
+		if(!x_flag)
 		{
 			max_p = 0;
 			for (int j = 0; j < 64; j++)
@@ -510,8 +511,8 @@ int CMMOnlineDlg::RootProcessing()
 				posy = posy / eney;
 				output->Fill();
 				count++;
-				x_flag = true;
 			}
+			x_flag = true;
 		}
 	}
 	P_GUI->DestroyWindow();
