@@ -54,6 +54,7 @@ protected:
 	CString s_NSample;
 	CString s_R_ch;
 	CString cmd_test;
+	CString cut_test;
 
 	CButton	m_chkChEnable;
 	// 生成的消息映射函数

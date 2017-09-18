@@ -46,6 +46,7 @@ void CMMOnlineDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT5, s_Y_F_th);
 	DDX_Text(pDX, IDC_EDIT6, s_Y_S_th);
 	DDX_Text(pDX, IDC_EDIT7, s_R_ch);
+	DDX_Text(pDX, IDC_EDIT8, cut_test);
 	DDX_Text(pDX, IDC_EDIT9, cmd_test);
 	DDX_Control(pDX, IDC_CHECK1, m_chkChEnable);
 
@@ -233,10 +234,21 @@ int CMMOnlineDlg::RawDataProcess()
 								for (int i = 0; i < 512; i++)
 								{
 									f.read((char*)&data_bulk, 66 * 2);
-									for (int ii = 0; ii < 64; ii++)
+									if (*data_bulk == 704)
 									{
-										adc = data_bulk + ii + 2;
-										adc_data[ii + ((ASIC_CH / 64) - miniloop - 1) * 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+										for (int ii = 0; ii < 64; ii++)
+										{
+											adc = data_bulk + ii + 2;
+											adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+										}
+									}
+									else if (*data_bulk == 208)
+									{
+										for (int ii = 0; ii < 64; ii++)
+										{
+											adc = data_bulk + ii + 2;
+											adc_data[ii + 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+										}
 									}
 								}
 								f.read((char*)&tag, 2);
@@ -246,7 +258,8 @@ int CMMOnlineDlg::RawDataProcess()
 								}
 								else if ((tag & 0xFFFF) == 0xEEEE)
 								{
-									adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][511] = adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][510];
+									if (*data_bulk == 704)adc_data[63][511] = adc_data[62][510];
+									else if (*data_bulk == 208)adc_data[127][511] = adc_data[126][510];
 									f.seekg(-2, ios::cur);
 									count++;
 									E_count++;
@@ -272,10 +285,21 @@ int CMMOnlineDlg::RawDataProcess()
 								for (int i = 0; i < 512; i++)
 								{
 									f.read((char*)&data_bulk, 66 * 2);
-									for (int ii = 0; ii < 64; ii++)
+									if (*data_bulk == 704)
 									{
-										adc = data_bulk + ii + 2;
-										adc_data[ii + ((ASIC_CH / 64) - miniloop - 1) * 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+										for (int ii = 0; ii < 64; ii++)
+										{
+											adc = data_bulk + ii + 2;
+											adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+										}
+									}
+									else if (*data_bulk == 208)
+									{
+										for (int ii = 0; ii < 64; ii++)
+										{
+											adc = data_bulk + ii + 2;
+											adc_data[ii + 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+										}
 									}
 								}
 								f.read((char*)&tag, 2);
@@ -285,7 +309,8 @@ int CMMOnlineDlg::RawDataProcess()
 								}
 								else if ((tag & 0xFFFF) == 0xEEEE)
 								{
-									adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][511] = adc_data[((ASIC_CH / 64) - miniloop) * 64 - 1][510];
+									if (*data_bulk == 704)adc_data[63][511] = adc_data[62][510];
+									else if (*data_bulk == 208)adc_data[127][511] = adc_data[126][510];
 									f.seekg(-2, ios::cur);
 									count++;
 									E_count++;
@@ -952,10 +977,38 @@ void CMMOnlineDlg::OnBnClickedButton14()
 	// TODO: Add your control notification handler code here
 	UpdateData(TRUE);
 	//Cstring2Char
-	CString tmp_name = cmd_test;
-	char *aux_string = (char*)tmp_name.GetBuffer(0);
-	long len = wcslen(tmp_name); //the length of "salut"
-	wcstombs(aux_string, tmp_name, len); //conversion to char *	
-	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
-	gROOT->ProcessLine(aux_string);
+	CString tmp_cmd = cmd_test;
+	char *aux_string1 = (char*)tmp_cmd.GetBuffer(0);
+	long len = wcslen(tmp_cmd); //the length of "salut"
+	wcstombs(aux_string1, tmp_cmd, len); //conversion to char *	
+	aux_string1[len] = '\0';	 //don't forget to put the caracter of terminated string
+
+							 //Cstring2Char
+	CString tmp_cut = cut_test;
+	char *aux_string2 = (char*)tmp_cut.GetBuffer(0);
+	len = wcslen(tmp_cut); //the length of "salut"
+	wcstombs(aux_string2, tmp_cut, len); //conversion to char *	
+	aux_string2[len] = '\0';	 //don't forget to put the caracter of terminated string
+
+	//Drawing
+	if (!output)return;
+	//open ROOT viewer
+	if (view->GetSafeHwnd() == NULL)view->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
+	//GetDlgItem(IDC)->SetWindowText(_T("Stop DAQ"));
+	view->ShowWindow(SW_SHOW);
+	if (h1)delete h1;
+	if (h2)delete h2;
+	output->Draw(aux_string1, aux_string2);
+	if (h1) 
+	{
+		h1 = (TH1F*)gDirectory->Get("h1");
+		view->FillHist(h1);
+	}
+	if (h2)
+	{
+		h2 = (TH2F*)gDirectory->Get("h2");
+		view->FillHist(h2);
+	}
+
+	view->UpdateViewer();
 }
