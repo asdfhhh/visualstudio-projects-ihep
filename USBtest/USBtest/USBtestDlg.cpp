@@ -105,7 +105,8 @@ int CUSBtestDlg::FindEndPoint()
 	int nDeviceIndex = 0;
 	// Is there any FX device connected to system?
 	//if ((nDeviceIndex = m_cboDevices.GetCurSel()) == -1 || m_selectedUSBDevice == NULL) return FALSE;
-
+	inEpAddress = 0x0;
+	outEpAddress = 0x0;
 	// There are devices connected in the system.       
 	m_selectedUSBDevice->Open(nDeviceIndex);
 	int interfaces = this->m_selectedUSBDevice->AltIntfcCount() + 1;
@@ -129,6 +130,8 @@ int CUSBtestDlg::FindEndPoint()
 
 				strData += ((ept->Attributes == 1) ? L"ISOC " : ((ept->Attributes == 2) ? L"BULK " : L"INTR "));
 				strData += (ept->bIn ? L"IN, " : L"OUT, ");
+				if (ept->bIn) inEpAddress = ept->Address;
+				else outEpAddress= ept->Address;
 				//strTemp.Format(L"%d  Bytes,", ept->MaxPktSize);
 				//strData += strTemp;
 				//
@@ -167,12 +170,26 @@ void CUSBtestDlg::OnBnClickedOk()
 // this is a test function
 int CUSBtestDlg::TestUSB()
 {
-	/*BYTE inEpAddress = 0x0, outEpAddress = 0x0;
-	CCyUSBEndPoint *epBulkOut = m_selectedUSBDevice->EndPointOf(outEpAddress);
-	CCyUSBEndPoint *epBulkIn = m_selectedUSBDevice->EndPointOf(inEpAddress);
-	if (epBulkOut == NULL || epBulkIn == NULL) return 0;*/
-	
-	// This example assumes that the device automatically sends back,
+	epBulkOut = m_selectedUSBDevice->EndPointOf(outEpAddress);
+	epBulkIn = m_selectedUSBDevice->EndPointOf(inEpAddress);
+	if (epBulkOut == NULL || epBulkIn == NULL) return 0;
+
+	epBulkIn->SetXferSize(IN_SIZE);
+	epBulkOut->SetXferSize(CMD_LEN);
+	LONG inlength = IN_SIZE;
+	epBulkOut->TimeOut = 10;
+	int status=Send_USB_CMD(0xAA, 0xEA, 0, 0, 0, 0xCC);
+	/*UINT32 gate_value=1;
+	UINT16 value;
+	if ((gate_value<4000) && (gate_value >= 0))
+	{
+		value = gate_value / 4000.0 * 4096;  //convert mV to ADC bin
+		status=Send_USB_CMD(0xAA, 0xEB, 0, 0, value >> 8, value);
+	}*/
+	memset(inBuffer, 0, inlength);
+	while(!status)status=epBulkIn->XferData(inBuffer, inlength);
+	CString strError;
+	strError.Format(L"Error code: %d\r\n", epBulkIn->LastError);	// This example assumes that the device automatically sends back,
 	// over its bulk-IN endpoint, any bytes that were received over its
 	// bulk-OUT endpoint (commonly referred to as a loopback function)
 	/*
@@ -194,7 +211,7 @@ int CUSBtestDlg::TestUSB()
 	CloseHandle(outOvLap.hEvent);
 	CloseHandle(inOvLap.hEvent);
 */
-	Send_USB_CMD(0xAA, 0xEA, 0, 0, 0, 0xCC);//EA AA 00 00 CC 00
+	/*Send_USB_CMD(0xAA, 0xEA, 0, 0, 0, 0xCC);//EA AA 00 00 CC 00
 	int gate_value = 200;
 	int value;
 	char buf[100];
@@ -205,7 +222,7 @@ int CUSBtestDlg::TestUSB()
 		Send_USB_CMD(0xAA, 0xEB, 0, 0, value >> 8, value);
 	}
 	else
-		printf("Set gate_value [%d] error!\n", gate_value);
+		printf("Set gate_value [%d] error!\n", gate_value);*/
 	return 1;
 }
 
@@ -220,8 +237,10 @@ int CUSBtestDlg::Send_USB_CMD(BYTE cmd5, BYTE cmd4, BYTE cmd3, BYTE cmd2, BYTE c
 	outBuffer[5] = cmd1;
 	outBuffer[4] = cmd0;
 
-	outBytes = CMD_LEN;
-	outBulkControl.pipeNum = 0; //EP2 OUT
+	LONG outBytes = CMD_LEN;
+	return epBulkOut->XferData(outBuffer, outBytes);
+
+	/*outBulkControl.pipeNum = 0; //EP2 OUT
 
 	if (!m_selectedUSBDevice)
 	{
@@ -237,10 +256,9 @@ int CUSBtestDlg::Send_USB_CMD(BYTE cmd5, BYTE cmd4, BYTE cmd3, BYTE cmd2, BYTE c
 		outBytes,
 		&nBytes,
 		NULL);
-
+		
 	if (status)
 		printf("Send USB CMD %d Bytes: 0x%02X 0x%02X  0x%02X 0x%02X  0x%02X 0x%02X\n", nBytes, outBuffer[1], outBuffer[0], outBuffer[3], outBuffer[2], outBuffer[5], outBuffer[4]);
 	else
-		printf("Send_USB_CMD Error, Return Status!=0 !\n");
-	return 0;
+		printf("Send_USB_CMD Error, Return Status!=0 !\n");*/
 }

@@ -31,6 +31,9 @@ protected:
 	unsigned char outBuffer[CMD_LEN];  //用于发送命令
 	unsigned char inBuffer[IN_SIZE]; //用于接收数据的缓存 
 	ULONG outBytes, inBytes;
+	BYTE inEpAddress, outEpAddress;
+	CCyUSBEndPoint *epBulkOut;
+	CCyUSBEndPoint *epBulkIn;
 	ULONG nBytes;
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
