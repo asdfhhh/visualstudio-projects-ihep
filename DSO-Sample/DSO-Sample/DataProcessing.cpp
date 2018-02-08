@@ -100,9 +100,10 @@ UINT DataProcessing::TreadFunction(LPVOID lParam)
 		if (pData->ilen)baseline = baseline / (pData->ilen / 3);
 		for (int i = 0; i < pData->ilen; i++)
 		{
+			if (i != 0)highp_p.inm1 = polar*(pData->ibuf2[i - 1] - baseline);
 			highp_p.outm1 = highp->Processing(&highp_p, polar*(pData->ibuf2[i] - baseline));
 			lowp_p.outm1 = lowp->Processing(&lowp_p, highp_p.outm1);
-			pData->obuf2[i] = highp_p.outm1;
+			pData->obuf2[i] = lowp_p.outm1;
 		}
 		for (int ii = 0; ii < 5; ii++)
 		{

@@ -18,6 +18,7 @@
 
 CUSBtestDlg::CUSBtestDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_USBTEST_DIALOG, pParent)
+	, s_Th(_T("200"))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -25,12 +26,17 @@ CUSBtestDlg::CUSBtestDlg(CWnd* pParent /*=NULL*/)
 void CUSBtestDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT1, s_Th);
 }
 
 BEGIN_MESSAGE_MAP(CUSBtestDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, &CUSBtestDlg::OnBnClickedOk)
+	ON_EN_CHANGE(IDC_EDIT1, &CUSBtestDlg::OnEnChangeEdit1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CUSBtestDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CUSBtestDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDCANCEL, &CUSBtestDlg::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
 
@@ -49,13 +55,13 @@ BOOL CUSBtestDlg::OnInitDialog()
 	m_selectedUSBDevice = new CCyUSBDevice(this->m_hWnd, CYUSBDRV_GUID, true);
 	int  nDeviceCount = m_selectedUSBDevice->DeviceCount();
 
-	
-	for (int nIdx = 0; nIdx < m_selectedUSBDevice->DeviceCount(); nIdx++) 
+
+	for (int nIdx = 0; nIdx < m_selectedUSBDevice->DeviceCount(); nIdx++)
 	{
 		CString strDeviceData;
 		m_selectedUSBDevice->Open(nIdx);
 		strDeviceData.Format(L"(0x%04X - 0x%04X) %s", m_selectedUSBDevice->VendorID, m_selectedUSBDevice->ProductID, CString(m_selectedUSBDevice->FriendlyName));
-		AfxMessageBox(strDeviceData);
+		//AfxMessageBox(strDeviceData);
 	}
 	//DeviceIoControl(
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -88,6 +94,7 @@ void CUSBtestDlg::OnPaint()
 	{
 		CDialogEx::OnPaint();
 	}
+	GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
 }
 
 // The system calls this function to obtain the cursor to display while the user drags
@@ -131,30 +138,23 @@ int CUSBtestDlg::FindEndPoint()
 				strData += ((ept->Attributes == 1) ? L"ISOC " : ((ept->Attributes == 2) ? L"BULK " : L"INTR "));
 				strData += (ept->bIn ? L"IN, " : L"OUT, ");
 				if (ept->bIn) inEpAddress = ept->Address;
-				else outEpAddress= ept->Address;
-				//strTemp.Format(L"%d  Bytes,", ept->MaxPktSize);
-				//strData += strTemp;
-				//
-				//if(m_selectedUSBDevice->BcdUSB == USB30)
-				//{
-				//    strTemp.Format(L"%d  MaxBurst,", ept->ssmaxburst);
-				//    strData += strTemp;
-				//}
-
-				strTemp.Format(L"AltInt - %d and EpAddr - 0x%02X", nDeviceInterfaces, ept->Address);
-				strData += strTemp;
-				AfxMessageBox(strData);
-				//if (ept->bIn) this->m_cboEndpointIN.AddString(strData);
-				//else this->m_cboEndpointOUT.AddString(strData);
-			}
+				else outEpAddress = ept->Address;
+							}
 		}
 	}
 
-	//if (m_cboEndpointOUT.GetCount() > 0) m_cboEndpointOUT.SetCurSel(0);
-	//if (m_cboEndpointIN.GetCount() > 0) m_cboEndpointIN.SetCurSel(0);
+	epBulkOut = m_selectedUSBDevice->EndPointOf(outEpAddress);
+	epBulkIn = m_selectedUSBDevice->EndPointOf(inEpAddress);
+	if (epBulkOut == NULL || epBulkIn == NULL) return 0;
 
-	//this->m_btnStart.EnableWindow((m_cboEndpointIN.GetCount() > 0 && m_cboEndpointIN.GetCount() > 0));
+	epBulkIn->SetXferSize(IN_SIZE);
+	epBulkOut->SetXferSize(CMD_LEN);
+	outOvLap.hEvent = CreateEvent(NULL, false, false, L"CYUSB_OUT");
+	//epBulkOut->TimeOut = 10;
+	int status = Send_USB_CMD(0xAA, 0xEA, 0, 0, 0, 0xCC);
 
+	GetDlgItem(IDOK)->EnableWindow(0);
+	GetDlgItem(IDC_BUTTON1)->EnableWindow(1);
 	return 1;
 }
 
@@ -170,95 +170,174 @@ void CUSBtestDlg::OnBnClickedOk()
 // this is a test function
 int CUSBtestDlg::TestUSB()
 {
-	epBulkOut = m_selectedUSBDevice->EndPointOf(outEpAddress);
-	epBulkIn = m_selectedUSBDevice->EndPointOf(inEpAddress);
-	if (epBulkOut == NULL || epBulkIn == NULL) return 0;
-
-	epBulkIn->SetXferSize(IN_SIZE);
-	epBulkOut->SetXferSize(CMD_LEN);
-	LONG inlength = IN_SIZE;
-	epBulkOut->TimeOut = 10;
-	int status=Send_USB_CMD(0xAA, 0xEA, 0, 0, 0, 0xCC);
-	/*UINT32 gate_value=1;
-	UINT16 value;
-	if ((gate_value<4000) && (gate_value >= 0))
+	UpdateData(TRUE);
+	UINT32 gate_value = _tstoi(s_Th);
+	int i_NSample = _tstoi(s_Th);
+	if (i_NSample > 4000)
 	{
-		value = gate_value / 4000.0 * 4096;  //convert mV to ADC bin
-		status=Send_USB_CMD(0xAA, 0xEB, 0, 0, value >> 8, value);
-	}*/
-	memset(inBuffer, 0, inlength);
-	while(!status)status=epBulkIn->XferData(inBuffer, inlength);
-	CString strError;
-	strError.Format(L"Error code: %d\r\n", epBulkIn->LastError);	// This example assumes that the device automatically sends back,
-	// over its bulk-IN endpoint, any bytes that were received over its
-	// bulk-OUT endpoint (commonly referred to as a loopback function)
-	/*
-	OVERLAPPED outOvLap, inOvLap;
-	outOvLap.hEvent = CreateEvent(NULL, false, false, L"CYUSB_OUT");
-	inOvLap.hEvent = CreateEvent(NULL, false, false, L"CYUSB_IN");
-	unsigned char inBuf[128];
-	ZeroMemory(inBuf, 128);
-	unsigned char buffer[128];
-	LONG length = 128;
-	// Just to be cute, request the return data before initiating the loopback
-	UCHAR *inContext = m_selectedUSBDevice->BulkInEndPt->BeginDataXfer(inBuf, length, &inOvLap);
-	UCHAR *outContext = m_selectedUSBDevice->BulkOutEndPt->BeginDataXfer(buffer, length,
-		&outOvLap);
-	m_selectedUSBDevice->BulkOutEndPt->WaitForXfer(&outOvLap, 100);
-	m_selectedUSBDevice->BulkInEndPt->WaitForXfer(&inOvLap, 100);
-	m_selectedUSBDevice->BulkOutEndPt->FinishDataXfer(buffer, length, &outOvLap, outContext);
-	m_selectedUSBDevice->BulkInEndPt->FinishDataXfer(inBuf, length, &inOvLap, inContext);
-	CloseHandle(outOvLap.hEvent);
-	CloseHandle(inOvLap.hEvent);
-*/
-	/*Send_USB_CMD(0xAA, 0xEA, 0, 0, 0, 0xCC);//EA AA 00 00 CC 00
-	int gate_value = 200;
-	int value;
-	char buf[100];
-	sscanf(buf, "%d", &gate_value);
-	if ((gate_value < 4000) && (gate_value >= 50))
-	{
-		value = gate_value / 4000.0 * 4096;  //convert mV to ADC bin
-		Send_USB_CMD(0xAA, 0xEB, 0, 0, value >> 8, value);
+		AfxMessageBox(_T("Error! Input Number must less than 4000!"));
+		s_Th = _T("4000");
+		UpdateData(FALSE);
+		return 0;
 	}
-	else
-		printf("Set gate_value [%d] error!\n", gate_value);*/
+	if (i_NSample < 50)
+	{
+		AfxMessageBox(_T("Error! Input Number must biger than 50!"));
+		s_Th = _T("50");
+		UpdateData(FALSE);
+		return 0;
+	}
+	UINT16 value;
+	int status;
+	if ((gate_value < 4000) && (gate_value >= 0))
+	{
+		value = gate_value / 4000.0 * 4096;  //convert mV to ADC bin
+											 //while (status)
+		{
+			status = Send_USB_CMD(0xAA, 0xEB, 0, 0, value >> 8, value);
+			Sleep(100);
+		}
+	}
 	return 1;
 }
 
 
 int CUSBtestDlg::Send_USB_CMD(BYTE cmd5, BYTE cmd4, BYTE cmd3, BYTE cmd2, BYTE cmd1, BYTE cmd0)
 {
-
 	outBuffer[1] = cmd5;
 	outBuffer[0] = cmd4;
 	outBuffer[3] = cmd3;
 	outBuffer[2] = cmd2;
 	outBuffer[5] = cmd1;
 	outBuffer[4] = cmd0;
-
 	LONG outBytes = CMD_LEN;
-	return epBulkOut->XferData(outBuffer, outBytes);
+	// Just to be cute, request the return data before initiating the loopback
+	UCHAR *outContext = epBulkOut->BeginDataXfer(outBuffer, outBytes,
+		&outOvLap);
+	epBulkOut->WaitForXfer(&outOvLap, 100);
+	epBulkOut->FinishDataXfer(outBuffer, outBytes, &outOvLap, outContext);
 
-	/*outBulkControl.pipeNum = 0; //EP2 OUT
+	return outBytes;
+}
 
-	if (!m_selectedUSBDevice)
+
+void CUSBtestDlg::OnEnChangeEdit1()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+
+	return;
+}
+
+
+void CUSBtestDlg::OnBnClickedButton1()
+{
+	// TODO: Add your control notification handler code here
+	TestUSB();
+}
+
+
+void CUSBtestDlg::OnBnClickedButton2()
+{
+	// TODO: Add your control notification handler code here
+	GetDlgItem(IDC_BUTTON2)->EnableWindow(0);
+	inOvLap.hEvent = CreateEvent(NULL, false, false, L"CYUSB_IN");
+
+	LONG inlength = 0;
+	memset(inBuffer, 0, inlength);
+	FILE *fp_save;
+	fp_save = fopen("test.dat", "wb");
+	int status = 0;
+	if (!fp_save)
 	{
-		printf("Send_USB_CMD Error : hDevice=NULL!\n");
+		AfxMessageBox(_T("Error! Can not Open File!"));
 		return;
 	}
-	int status = DeviceIoControl(
-		hDevice,
-		IOCTL_EZUSB_BULK_WRITE,
-		&outBulkControl,
-		sizeof(BULK_TRANSFER_CONTROL),
-		outBuffer,
-		outBytes,
-		&nBytes,
-		NULL);
-		
-	if (status)
-		printf("Send USB CMD %d Bytes: 0x%02X 0x%02X  0x%02X 0x%02X  0x%02X 0x%02X\n", nBytes, outBuffer[1], outBuffer[0], outBuffer[3], outBuffer[2], outBuffer[5], outBuffer[4]);
-	else
-		printf("Send_USB_CMD Error, Return Status!=0 !\n");*/
+	//asynchronous trancefer
+	// Just to be cute, request the return data before initiating the loopback
+	while(!inlength)
+	{
+		inlength = IN_SIZE;
+		UCHAR *inContext = epBulkIn->BeginDataXfer(inBuffer, inlength, &inOvLap);
+		epBulkIn->WaitForXfer(&inOvLap, 100);
+		epBulkIn->FinishDataXfer(inBuffer, inlength, &inOvLap, inContext);
+	}
+	fwrite(inBuffer, inlength, 8, fp_save);   //数据缓存
+	fclose(fp_save);
+	GetDlgItem(IDC_BUTTON2)->EnableWindow(1);
+	CloseHandle(inOvLap.hEvent);
+
+	return;
+}
+
+//处理一个数据包
+//type=0xA0表示不输出文件&第一个包，type=0xA1表示不输出文件&非第一个包
+//type=0xB0表示输出文件&第一个包，type=0xB1表示输出文件&非第一个包
+UINT8 find_head = 0;
+UINT64 last_time_code_1s = 0;
+UINT32 event_count_1s = 0;
+char s_buf[100];
+void CUSBtestDlg::process_one_packet(unsigned char *p_buf, unsigned int length, unsigned char type)
+{
+	int i;
+	UINT64 *p_data;
+	UINT64 time_code;
+	UINT32 bin_index;
+	UINT32*p_spec_buf = (UINT32*)malloc(sizeof(UINT32)*2048);
+	memset((void*)p_spec_buf, 0, sizeof(UINT32)*2048);
+	p_data = (UINT64*)p_buf;
+
+	if ((type & 0x0f) == 0) //是第一个包，所以需要找头
+		find_head = 0;
+
+	for (i = 0; i<length / 8; i++) //遍历文件
+	{
+		if ((find_head == 0) && (p_data[i] == 0xAA55AA55AA55AA55)) //如果还没找到头，那么尝试寻找到正确的头!
+		{
+			find_head = 1;
+			continue;
+		}
+
+		if (find_head == 0)  //仍然还没找到头
+			continue;
+
+		bin_index = (p_data[i] & 0x0000000000000fff) >> 1; //11-bit ADC
+		if (bin_index<0x7ff)
+			p_spec_buf[bin_index]++;
+		time_code = (p_data[i] >> 16) & 0x00ffffffffff; // 50 ns unit   
+
+		if (type == 0xB1)  //离线模式，产生时间数据
+			//fprintf(fp_event, "%lld\t\t%d\n", time_code * 50, bin_index); //输出数据到文件夹中(严重影响采集计数率，建议离线处理!) 
+
+		event_count_1s++;
+		if (last_time_code_1s == 0)
+		{
+			last_time_code_1s = time_code;
+			event_count_1s = 0;
+		}
+		else if (time_code >= last_time_code_1s + 20000000) //新的1s到来，绘制秒的计数
+		{
+			last_time_code_1s = time_code;
+			//PlotStripChartPoint(panelHandle, PANEL_STRIPCHART, event_count_1s);  //绘制chart
+			sprintf(s_buf, "%d", event_count_1s);
+			//SetCtrlVal(panelHandle, PANEL_IDC_TEXT_EVENTRATE, s_buf);
+			event_count_1s = 0;
+		}
+	}
+	Sleep(10);
+	return;
+	//删除旧图,绘制新图   
+	//DeleteGraphPlot(panelHandle, PANEL_GRAPH, -1, VAL_IMMEDIATE_DRAW);
+	//PlotY(panelHandle, PANEL_GRAPH, p_spec_buf, ENG_CHN_NUM, VAL_UNSIGNED_INTEGER, VAL_THIN_LINE, VAL_EMPTY_SQUARE, VAL_SOLID, 1, VAL_RED);
+}
+
+void CUSBtestDlg::OnBnClickedCancel()
+{
+	// TODO: Add your control notification handler code here
+	CloseHandle(outOvLap.hEvent);
+	CDialogEx::OnCancel();
 }

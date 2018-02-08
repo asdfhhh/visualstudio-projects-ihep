@@ -756,7 +756,7 @@ void CMMOnlineDlg::OnBnClickedSavePed()
 
 	for (int i = 0; i < ASIC_CH; i++)
 	{
-		ped_data[i] = ped_data[i] * 2 / total;
+		ped_data[i] = ped_data[i] / total;
 		f << ped_data[i] << endl;
 	}
 

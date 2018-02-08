@@ -4,6 +4,7 @@
 
 #pragma once
 #include "CyAPI.h"
+#include "afxwin.h"
 #define CMD_LEN 6 
 #define IN_SIZE 1024 
 
@@ -34,6 +35,7 @@ protected:
 	BYTE inEpAddress, outEpAddress;
 	CCyUSBEndPoint *epBulkOut;
 	CCyUSBEndPoint *epBulkIn;
+	OVERLAPPED outOvLap, inOvLap;
 	ULONG nBytes;
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
@@ -47,4 +49,10 @@ public:
 	// this is a test function
 	int TestUSB();
 	int Send_USB_CMD(BYTE cmd5, BYTE cmd4, BYTE cmd3, BYTE cmd2, BYTE cmd1, BYTE cmd0);
+	afx_msg void OnEnChangeEdit1();
+	void process_one_packet(unsigned char *p_buf, unsigned int length, unsigned char type);
+	CString s_Th;
+	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedCancel();
 };
