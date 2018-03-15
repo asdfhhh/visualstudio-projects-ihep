@@ -35,8 +35,10 @@ public:
 // 实现
 protected:
 	HICON m_hIcon;
-	CString m_FilePath;
 	CString m_FileExt;
+	CArray<CString, CString> m_FilePath;
+	CString base_FilePath;
+	int FileNum;
 	TFile *root_file;
 	TTree*t;
 	TTree*output;
@@ -66,7 +68,7 @@ public:
 	afx_msg void OnBnClickedOpenFile();
 	// 处理RAW的程序
 	int RawDataProcess();
-//	afx_msg void OnNMCustomdrawProgress1(NMHDR *pNMHDR, LRESULT *pResult);
+	//	afx_msg void OnNMCustomdrawProgress1(NMHDR *pNMHDR, LRESULT *pResult);
 	CProgressCtrl* m_Progress;
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
@@ -80,7 +82,7 @@ public:
 	afx_msg void OnBnClickedDrawEY();
 	afx_msg void OnBnClickedDrawPY();
 	afx_msg void OnBnClickedDrawSizeY();
-//	afx_msg void OnChangeEdit2();
+	//	afx_msg void OnChangeEdit2();
 	afx_msg void OnBnClickedOpenPed();
 	int PedProcessing();
 	afx_msg void OnBnClickedSavePed();

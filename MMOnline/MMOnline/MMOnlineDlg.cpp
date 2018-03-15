@@ -21,6 +21,7 @@ CMMOnlineDlg::CMMOnlineDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_MMONLINE_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON1);
+	FileNum = 0;
 	view = new Viewer(this);
 	t = 0;
 	root_file = 0;
@@ -143,29 +144,40 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 		NULL);
 	if (dlg.DoModal() == IDOK)
 	{
-		m_FilePath = dlg.GetPathName();////////取出文件路径 
-		m_FileExt = dlg.GetFileExt();
+		////////取出文件路径
+		POSITION pos = dlg.GetStartPosition();
+		while (pos != NULL)
+		{
+			m_FilePath.Add(dlg.GetNextPathName(pos));
+		}
+		m_FileExt = m_FilePath.ElementAt(0).Right(3);
+		FileNum = m_FilePath.GetSize();
 		//UpdateData(FALSE);
 	}
-
 	if (m_FileExt == _T("dat"))
 	{
 		RawDataProcess();
 		GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
 	}
-	else if (m_FileExt == _T("root"))
+	else if (m_FileExt == _T("oot"))
 	{
-		CString tmp_name = m_FilePath;
-		char *aux_string = (char*)tmp_name.GetBuffer(0);
-		long len = wcslen(tmp_name); //the length of "salut"
-		wcstombs(aux_string, tmp_name, len); //conversion to char *	
-		aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
-		root_file = new TFile(aux_string);
-		t = (TTree*)root_file->Get("ana");
-		GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
-		GetDlgItem(IDC_BUTTON6)->EnableWindow(0);
+		if (FileNum == 1)
+		{
+			CString tmp_name = m_FilePath.ElementAt(0);
+			char *aux_string = (char*)tmp_name.GetBuffer(0);
+			long len = wcslen(tmp_name); //the length of "salut"
+			wcstombs(aux_string, tmp_name, len); //conversion to char *	
+			aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
+			root_file = new TFile(aux_string);
+			t = (TTree*)root_file->Get("ana");
+			GetDlgItem(IDC_BUTTON1)->EnableWindow(0);
+			GetDlgItem(IDC_BUTTON6)->EnableWindow(0);
+		}
+		else
+		{
+			AfxMessageBox(_T("ROOT格式只能处理一个文件！"));
+		}
 	}
-
 }
 
 
@@ -173,222 +185,228 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 int CMMOnlineDlg::RawDataProcess()
 {
 	UpdateData(TRUE);
-	int miniloop = (ASIC_CH / 64) - 1;
-	UShort_t adc_data[ASIC_CH][512];
-	int Inf_time;
-	int tag;
-	float f_T_th = _tstof(s_T_th);
-	int i_NSample = _tstoi(s_NSample);
-	int ext_ped = m_chkChEnable.GetCheck();
-	UShort_t data_bulk[66];
-	UShort_t *adc = 0;
-	//读入文件
-	CString tmp_name = m_FilePath;
-	char *aux_string = (char*)tmp_name.GetBuffer(0);
-	long len = wcslen(tmp_name); //the length of "salut"
-	wcstombs(aux_string, tmp_name, len); //conversion to char *	
-	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
-
-	ifstream f(aux_string, ifstream::binary);
-	if (f.is_open())
+	t = new TTree("ana", "the results of analysis");
+	t->Branch("baseline", baseline, "baseline[128]/F");
+	t->Branch("peak", peak, "peak[128]/F");
+	t->Branch("ptime", ptime, "ptime[128]/I");
+	t->Branch("rtime", rtime, "rtime[128]/F");
+	for (int fileloop = 0; fileloop < FileNum; fileloop++)
 	{
+		int miniloop = (ASIC_CH / 64) - 1;
+		UShort_t adc_data[ASIC_CH][512];
+		int Inf_time;
+		int tag;
+		float f_T_th = _tstof(s_T_th);
+		int i_NSample = _tstoi(s_NSample);
+		int ext_ped = m_chkChEnable.GetCheck();
+		UShort_t data_bulk[66];
+		UShort_t *adc = 0;
+		//读入文件
+		CString tmp_name = m_FilePath.ElementAt(fileloop);
+		char *aux_string = (char*)tmp_name.GetBuffer(0);
+		long len = wcslen(tmp_name); //the length of "salut"
+		wcstombs(aux_string, tmp_name, len); //conversion to char *	
+		aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string
 
-		Processing *P_GUI = new Processing(this);
-		if (P_GUI->GetSafeHwnd() == NULL)P_GUI->Create(MAKEINTRESOURCE(IDD_DIALOG2), this);
-		P_GUI->ShowWindow(SW_SHOW);
-		m_Progress = P_GUI->GetCP();
-		t = new TTree("ana", "the results of analysis");
-		t->Branch("baseline", baseline, "baseline[128]/F");
-		t->Branch("peak", peak, "peak[128]/F");
-		t->Branch("ptime", ptime, "ptime[128]/I");
-		t->Branch("rtime", rtime, "rtime[128]/F");
-
-		//TH1F*h1=new TH1F("test","test",512,0,512);
-		int count = 0;
-		int E_count = 0;
-		f.seekg(0, f.end);
-		int file_size = f.tellg();
-		int process_cur = 0;
-		m_Progress->SetRange(0, 100);
-		m_Progress->SetPos(0);
-		f.seekg(0, f.beg);
-		while (!f.eof())
+		ifstream f(aux_string, ifstream::binary);
+		if (f.is_open())
 		{
-			f.read((char*)&tag, 1);
-			process_cur = f.tellg() * 100 / file_size;
-			m_Progress->SetPos(process_cur);
-			if ((tag & 0xFF) == 0xEE)
+
+			Processing *P_GUI = new Processing(this);
+			if (P_GUI->GetSafeHwnd() == NULL)P_GUI->Create(MAKEINTRESOURCE(IDD_DIALOG2), this);
+			P_GUI->ShowWindow(SW_SHOW);
+			m_Progress = P_GUI->GetCP();
+
+			//TH1F*h1=new TH1F("test","test",512,0,512);
+			int count = 0;
+			int E_count = 0;
+			f.seekg(0, f.end);
+			int file_size = f.tellg();
+			int process_cur = 0;
+			m_Progress->SetRange(0, 100);
+			m_Progress->SetPos(0);
+			f.seekg(0, f.beg);
+			while (!f.eof())
 			{
 				f.read((char*)&tag, 1);
+				process_cur = f.tellg() * 100 / file_size;
+				m_Progress->SetPos(process_cur);
 				if ((tag & 0xFF) == 0xEE)
 				{
 					f.read((char*)&tag, 1);
-					if ((tag & 0xFF) == 0xE0)
+					if ((tag & 0xFF) == 0xEE)
 					{
 						f.read((char*)&tag, 1);
-						if ((tag & 0xFF) == 0x00)
+						if ((tag & 0xFF) == 0xE0)
 						{
-							f.read((char*)&Inf_time, 4);
-							if (miniloop)
+							f.read((char*)&tag, 1);
+							if ((tag & 0xFF) == 0x00)
 							{
-								for (int i = 0; i < 512; i++)
+								f.read((char*)&Inf_time, 4);
+								if (miniloop)
 								{
-									f.read((char*)&data_bulk, 66 * 2);
-									if (*data_bulk == 704)
+									for (int i = 0; i < 512; i++)
 									{
-										for (int ii = 0; ii < 64; ii++)
+										f.read((char*)&data_bulk, 66 * 2);
+										if (*data_bulk == 704)
 										{
-											adc = data_bulk + ii + 2;
-											adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+											for (int ii = 0; ii < 64; ii++)
+											{
+												adc = data_bulk + ii + 2;
+												adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+											}
+										}
+										else if (*data_bulk == 208)
+										{
+											for (int ii = 0; ii < 64; ii++)
+											{
+												adc = data_bulk + ii + 2;
+												adc_data[ii + 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+											}
 										}
 									}
-									else if (*data_bulk == 208)
+									f.read((char*)&tag, 2);
+									if ((tag & 0xFFFF) == 0xFFFF)
 									{
-										for (int ii = 0; ii < 64; ii++)
-										{
-											adc = data_bulk + ii + 2;
-											adc_data[ii + 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
-										}
+										count++;
 									}
-								}
-								f.read((char*)&tag, 2);
-								if ((tag & 0xFFFF) == 0xFFFF)
-								{
-									count++;
-								}
-								else if ((tag & 0xFFFF) == 0xEEEE)
-								{
-									if (*data_bulk == 704)adc_data[63][511] = adc_data[62][510];
-									else if (*data_bulk == 208)adc_data[127][511] = adc_data[126][510];
-									f.seekg(-2, ios::cur);
-									count++;
-									E_count++;
-									continue;
-								}
-								else if ((tag & 0xFFFF) == 0xFFBC)
-								{
-									E_count++;
-									continue;
-								}
-								else
-								{
-									if (!f.eof())
+									else if ((tag & 0xFFFF) == 0xEEEE)
 									{
+										if (*data_bulk == 704)adc_data[63][511] = adc_data[62][510];
+										else if (*data_bulk == 208)adc_data[127][511] = adc_data[126][510];
+										f.seekg(-2, ios::cur);
+										count++;
 										E_count++;
 										continue;
 									}
-								}
-								miniloop--;
-							}
-							else //end of a event
-							{
-								for (int i = 0; i < 512; i++)
-								{
-									f.read((char*)&data_bulk, 66 * 2);
-									if (*data_bulk == 704)
-									{
-										for (int ii = 0; ii < 64; ii++)
-										{
-											adc = data_bulk + ii + 2;
-											adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
-										}
-									}
-									else if (*data_bulk == 208)
-									{
-										for (int ii = 0; ii < 64; ii++)
-										{
-											adc = data_bulk + ii + 2;
-											adc_data[ii + 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
-										}
-									}
-								}
-								f.read((char*)&tag, 2);
-								if ((tag & 0xFFFF) == 0xFFFF)
-								{
-									count++;
-								}
-								else if ((tag & 0xFFFF) == 0xEEEE)
-								{
-									if (*data_bulk == 704)adc_data[63][511] = adc_data[62][510];
-									else if (*data_bulk == 208)adc_data[127][511] = adc_data[126][510];
-									f.seekg(-2, ios::cur);
-									count++;
-									E_count++;
-									continue;
-								}
-								else if ((tag & 0xFFFF) == 0xFFBC)
-								{
-									E_count++;
-									continue;
-								}
-								else
-								{
-									if (!f.eof())
+									else if ((tag & 0xFFFF) == 0xFFBC)
 									{
 										E_count++;
 										continue;
-									}
-								}
-								//get the information
-								for (int j = 0; j < ASIC_CH; j++)
-								{
-									if (ext_ped)
-									{
-										baseline[j] = ped_data[j];
 									}
 									else
 									{
-										baseline[j] = 0;
-										for (int jj = 0; jj < i_NSample; jj++)
+										if (!f.eof())
 										{
-											baseline[j] += adc_data[j][jj];
-										}
-										baseline[j] = baseline[j] / i_NSample;
-									}
-									ptime[j] = 0;
-									rtime[j] = 0;
-									peak[j] = 0;
-									for (int jj = 0; jj < 512; jj++)
-									{
-										if (peak[j] < adc_data[j][jj])
-										{
-											peak[j] = adc_data[j][jj];
-											ptime[j] = jj;
+											E_count++;
+											continue;
 										}
 									}
-									for (int jj = ptime[j]; jj > 0; jj--)
-									{
-										rtime[j] = jj;
-										if ((adc_data[j][jj] - baseline[j]) < (peak[j] * f_T_th))break;
-									}
+									miniloop--;
 								}
-								t->Fill();
-								miniloop = (ASIC_CH / 64) - 1;
+								else //end of a event
+								{
+									for (int i = 0; i < 512; i++)
+									{
+										f.read((char*)&data_bulk, 66 * 2);
+										if (*data_bulk == 704)
+										{
+											for (int ii = 0; ii < 64; ii++)
+											{
+												adc = data_bulk + ii + 2;
+												adc_data[ii][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+											}
+										}
+										else if (*data_bulk == 208)
+										{
+											for (int ii = 0; ii < 64; ii++)
+											{
+												adc = data_bulk + ii + 2;
+												adc_data[ii + 64][i] = ((*adc << 8) & 0x0f00) + ((*adc >> 8) & 0x00ff);
+											}
+										}
+									}
+									f.read((char*)&tag, 2);
+									if ((tag & 0xFFFF) == 0xFFFF)
+									{
+										count++;
+									}
+									else if ((tag & 0xFFFF) == 0xEEEE)
+									{
+										if (*data_bulk == 704)adc_data[63][511] = adc_data[62][510];
+										else if (*data_bulk == 208)adc_data[127][511] = adc_data[126][510];
+										f.seekg(-2, ios::cur);
+										count++;
+										E_count++;
+										continue;
+									}
+									else if ((tag & 0xFFFF) == 0xFFBC)
+									{
+										E_count++;
+										continue;
+									}
+									else
+									{
+										if (!f.eof())
+										{
+											E_count++;
+											continue;
+										}
+									}
+									//get the information
+									for (int j = 0; j < ASIC_CH; j++)
+									{
+										if (ext_ped)
+										{
+											baseline[j] = ped_data[j];
+										}
+										else
+										{
+											baseline[j] = 0;
+											for (int jj = 0; jj < i_NSample; jj++)
+											{
+												baseline[j] += adc_data[j][jj];
+											}
+											baseline[j] = baseline[j] / i_NSample;
+										}
+										ptime[j] = 0;
+										rtime[j] = 0;
+										peak[j] = 0;
+										for (int jj = 0; jj < 512; jj++)
+										{
+											if (peak[j] < adc_data[j][jj])
+											{
+												peak[j] = adc_data[j][jj];
+												ptime[j] = jj;
+											}
+										}
+										for (int jj = ptime[j]; jj > 0; jj--)
+										{
+											rtime[j] = jj;
+											if ((adc_data[j][jj] - baseline[j]) < (peak[j] * f_T_th))break;
+										}
+									}
+									t->Fill();
+									miniloop = (ASIC_CH / 64) - 1;
+								}
 							}
 						}
 					}
 				}
 			}
+
+			f.close();
+			P_GUI->DestroyWindow();
+			delete P_GUI;
 		}
-		//save the file
-		tmp_name = m_FilePath;
-		tmp_name.TrimRight(_T(".dat"));
-		tmp_name += _T(".root");
-		aux_string = (char*)tmp_name.GetBuffer(0);
-		len = wcslen(tmp_name); //the length of "salut"
-		wcstombs(aux_string, tmp_name, len); //conversion to char *	
-		aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string	
-		root_file = new TFile(aux_string, "RECREATE");
-		f.close();
-		P_GUI->DestroyWindow();
-		delete P_GUI;
-		return 0;
+		else
+		{
+			return -1;
+		}
+		//free(adc_data);
 	}
-	else
-	{
-		return -1;
-	}
-	free(adc_data);
+	//save the file
+	CString tmp_name = m_FilePath.ElementAt(0);
+	char *aux_string = (char*)tmp_name.GetBuffer(0);
+	long len = wcslen(tmp_name); //the length of "salut"
+	tmp_name.TrimRight(_T(".dat"));
+	tmp_name += _T(".root");
+	aux_string = (char*)tmp_name.GetBuffer(0);
+	len = wcslen(tmp_name); //the length of "salut"
+	wcstombs(aux_string, tmp_name, len); //conversion to char *	
+	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string	
+	root_file = new TFile(aux_string, "RECREATE");
+	return 0;
 }
 
 
@@ -688,7 +706,7 @@ void CMMOnlineDlg::OnBnClickedOpenPed()
 		NULL);
 	if (dlg.DoModal() == IDOK)
 	{
-		m_FilePath = dlg.GetPathName();////////取出文件路径 
+		base_FilePath = dlg.GetPathName();////////取出文件路径 
 		m_FileExt = dlg.GetFileExt();
 		UpdateData(FALSE);
 	}
@@ -700,7 +718,7 @@ void CMMOnlineDlg::OnBnClickedOpenPed()
 int CMMOnlineDlg::PedProcessing()
 {
 	//读入文件
-	CString tmp_name = m_FilePath;
+	CString tmp_name = base_FilePath;
 	char *aux_string = (char*)tmp_name.GetBuffer(0);
 	long len = wcslen(tmp_name); //the length of "salut"
 	wcstombs(aux_string, tmp_name, len); //conversion to char *	
@@ -722,7 +740,7 @@ void CMMOnlineDlg::OnBnClickedSavePed()
 	if (!root_file)return;
 	//写入文件
 
-	CString tmp_name = m_FilePath;
+	CString tmp_name = m_FilePath.ElementAt(0);
 	tmp_name.TrimRight(_T(".dat"));
 	tmp_name += _T(".ped");
 
@@ -795,7 +813,7 @@ void CMMOnlineDlg::OnBnClickedSnapShoot()
 	UShort_t *adc = 0;
 	int i_R_ch = _tstoi(s_R_ch);
 	//读入文件
-	CString tmp_name = m_FilePath;
+	CString tmp_name = m_FilePath.ElementAt(0);
 	char *aux_string = (char*)tmp_name.GetBuffer(0);
 	long len = wcslen(tmp_name); //the length of "salut"
 	wcstombs(aux_string, tmp_name, len); //conversion to char *	
@@ -934,7 +952,7 @@ void CMMOnlineDlg::OnBnClickedCheck1()
 			NULL);
 		if (dlg.DoModal() == IDOK)
 		{
-			m_FilePath = dlg.GetPathName();////////取出文件路径 
+			base_FilePath = dlg.GetPathName();////////取出文件路径 
 			m_FileExt = dlg.GetFileExt();
 			UpdateData(FALSE);
 		}
