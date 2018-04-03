@@ -142,6 +142,10 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 		OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT | OFN_ENABLESIZING,
 		_T("RAW DATA (*.dat)|*.dat|ROOT FILES (*.root)|*.root||"),
 		NULL);
+	dlg.m_ofn.lpstrTitle = _T("请选择需要打开的文件");	//设置对话框标题 
+	dlg.m_ofn.nMaxFile = 500 * MAX_PATH;//最多可以打开100个文件  
+	dlg.m_ofn.lpstrFile = new TCHAR[dlg.m_ofn.nMaxFile];  
+	ZeroMemory(dlg.m_ofn.lpstrFile, sizeof(TCHAR) * dlg.m_ofn.nMaxFile); //
 	if (dlg.DoModal() == IDOK)
 	{
 		////////取出文件路径
@@ -185,13 +189,16 @@ void CMMOnlineDlg::OnBnClickedOpenFile()
 int CMMOnlineDlg::RawDataProcess()
 {
 	UpdateData(TRUE);
-	t = new TTree("ana", "the results of analysis");
-	t->Branch("baseline", baseline, "baseline[128]/F");
-	t->Branch("peak", peak, "peak[128]/F");
-	t->Branch("ptime", ptime, "ptime[128]/I");
-	t->Branch("rtime", rtime, "rtime[128]/F");
+
 	for (int fileloop = 0; fileloop < FileNum; fileloop++)
 	{
+		if (t) t->Write();
+		if (root_file)root_file->Close();
+		t = new TTree("ana", "the results of analysis");
+		t->Branch("baseline", baseline, "baseline[128]/F");
+		t->Branch("peak", peak, "peak[128]/F");
+		t->Branch("ptime", ptime, "ptime[128]/I");
+		t->Branch("rtime", rtime, "rtime[128]/F");
 		int miniloop = (ASIC_CH / 64) - 1;
 		UShort_t adc_data[ASIC_CH][512];
 		int Inf_time;
@@ -386,6 +393,17 @@ int CMMOnlineDlg::RawDataProcess()
 			}
 
 			f.close();
+			//save the file
+			CString tmp_name = m_FilePath.ElementAt(fileloop);
+			char *aux_string = (char*)tmp_name.GetBuffer(0);
+			long len = wcslen(tmp_name); //the length of "salut"
+			tmp_name.TrimRight(_T(".dat"));
+			tmp_name += _T(".root");
+			aux_string = (char*)tmp_name.GetBuffer(0);
+			len = wcslen(tmp_name); //the length of "salut"
+			wcstombs(aux_string, tmp_name, len); //conversion to char *	
+			aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string	
+			root_file = new TFile(aux_string, "RECREATE");
 			P_GUI->DestroyWindow();
 			delete P_GUI;
 		}
@@ -395,17 +413,6 @@ int CMMOnlineDlg::RawDataProcess()
 		}
 		//free(adc_data);
 	}
-	//save the file
-	CString tmp_name = m_FilePath.ElementAt(0);
-	char *aux_string = (char*)tmp_name.GetBuffer(0);
-	long len = wcslen(tmp_name); //the length of "salut"
-	tmp_name.TrimRight(_T(".dat"));
-	tmp_name += _T(".root");
-	aux_string = (char*)tmp_name.GetBuffer(0);
-	len = wcslen(tmp_name); //the length of "salut"
-	wcstombs(aux_string, tmp_name, len); //conversion to char *	
-	aux_string[len] = '\0';	 //don't forget to put the caracter of terminated string	
-	root_file = new TFile(aux_string, "RECREATE");
 	return 0;
 }
 
