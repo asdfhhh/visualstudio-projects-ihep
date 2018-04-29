@@ -52,3 +52,6 @@
 *.dat
 *.png
 *.ped
+*.enc
+/He3MWPC/He3MWPC/ana.cxx
+/He3MWPC/He3MWPC/read.cxx
