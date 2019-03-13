@@ -46,7 +46,7 @@ void readdata(char*input)
 	{
 		int tmp_tr = 0xffffffff;
 		//initial data file
-		sprintf(filename, "BL04_RUN1_MODULE01_FILE%d_", dataloop);
+		sprintf(filename, "BL04_RUN0_MODULE01_FILE%d_", dataloop);
 		strcat(filename, input);
 		strcpy(rootname, filename);
 		strcat(filename, dsuffix);
@@ -148,6 +148,7 @@ void readdata(char*input)
 								Q[i] = int(adc & 0xfff) - base[i];
 							}
 						}
+
 						t->Fill();
 						count++;
 						data_length /= 48;
@@ -196,7 +197,7 @@ void tran(char*input)
 	strcat(outname, rsuffix);
 	for (int i = 1; i < 7; i++)
 	{
-		sprintf(rootname[i - 1], "BL04_RUN1_MODULE01_FILE%d_", i);
+		sprintf(rootname[i - 1], "BL04_RUN0_MODULE01_FILE%d_", i);
 		strcat(rootname[i - 1], input);
 		strcat(rootname[i - 1], rsuffix);
 		std::cout << "Linking the File \"" << rootname[i - 1] << "\" ..." << endl;
@@ -265,7 +266,11 @@ void tran(char*input)
 			if (ii)
 			{
 				if (trigger[ii] == trigger[ii - 1]);
-				else std::cout << trigger[ii] << "\t" << trigger[ii - 1] << "Error in trigger!\n";
+				else
+				{
+					std::cout <<  "Error in trigger! T0:"<<i<<" module: "<< ii <<"in trigger:"<<trigger[ii] << " last module trigger:" << trigger[ii - 1] <<endl;
+					return;
+				}
 			}
 		}
 		for (int ii = 0; ii < 2; ii++)
