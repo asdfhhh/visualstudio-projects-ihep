@@ -92,10 +92,10 @@ int main()
 			else tmp.holiday = false;
 			pos=Findperson(sh_col, tmp.holiday,false);
 			tmp.day_sh = sh_col.at(pos).name;
-			sh_col.at(pos).shift+=2;
+			sh_col.at(pos).shift+=1;
 			pos = Findperson(sh_col,tmp.holiday, true);
 			tmp.night_sh = sh_col.at(pos).name;
-			sh_col.at(pos).shift+=3;
+			sh_col.at(pos).shift+=1;
 			cout << tmp.date << "\t" << tmp.day_sh << "\t" << tmp.night_sh << endl;
 			outfile << tmp.day_sh << "\t" << tmp.night_sh << endl;
 		}
