@@ -65,7 +65,7 @@ public:
 	inline void SetQSUMY(int par) { QSUMY = par; }
 	inline void SetFASTMATCH1(int par) { FASTMATCH1 = par; }
 	inline void SetFASTMATCH2(int par) { FASTMATCH2 = par; }
-
+	inline void SetProgress(CProgressCtrl*par) { m_Progress = par; }
 	inline int GetSLICESIZE() { return SLICESIZE; }
 	inline int GetSIGNALSIZE() { return SIGNALSIZE; }
 	inline int GetXCHANNELNUM() { return XCHANNELNUM; }
@@ -84,6 +84,8 @@ public:
 	inline int GetFASTMATCH2() { return FASTMATCH2; }
 
 	CListBox *pCtrl;
+	CProgressCtrl* m_Progress;
+
 private:
 
 	void scanSlice();

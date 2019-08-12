@@ -39,7 +39,7 @@ private:
 	CArray<CString, CString> m_FilePath;
 	int FileNum;
 	MWPCANA *pMWPC;
-	CProgressCtrl* m_Progress;
+	
 	enum PARLIST{ SLICESIZE=0, SIGNALSIZE ,XCHANNELNUM ,YCHANNELNUM ,QMIN ,QMAX ,MATCHWINDOW ,STRIPGAP  ,TOFRANGE1 ,TOFRANGE2 ,WIDELIMITX ,WIDELIMITY  ,QSUMX ,QSUMY ,FASTMATCH1,FASTMATCH2};
 public:
 	int NameProcessing();
@@ -62,6 +62,7 @@ public:
 	CString m_output;
 protected:
 	CListBox *pCtrl;
+	CProgressCtrl* m_Progress;
 public:
 	afx_msg void OnBnClickedCancel();
 };

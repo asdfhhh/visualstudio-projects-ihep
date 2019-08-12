@@ -11,6 +11,36 @@
 #define new DEBUG_NEW
 #endif
 
+// 用于应用程序“关于”菜单项的 CAboutDlg 对话框
+
+class CAboutDlg : public CDialog
+{
+public:
+	CAboutDlg();
+
+	// 对话框数据
+	enum { IDD = IDD_DIALOG2
+	};
+
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+
+														// 实现
+protected:
+	DECLARE_MESSAGE_MAP()
+};
+
+CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+{
+}
+
+void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+}
+
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+END_MESSAGE_MAP()
 
 // CRMDlg 对话框
 
@@ -148,12 +178,12 @@ int CRMDlg::NameProcessing()
 	if (P_GUI->GetSafeHwnd() == NULL)P_GUI->Create(MAKEINTRESOURCE(IDD_DIALOG1), this);
 	P_GUI->ShowWindow(SW_SHOW);
 	m_Progress = P_GUI->GetCP();
-	m_Progress->SetRange(0, FileNum);
-	m_Progress->SetPos(0);	
+	pMWPC->SetProgress(m_Progress);
 	for (int fileloop = 0; fileloop < FileNum; fileloop++)
 	{
 		m_output.Format(_T("Processing the file:"));
-		m_output= m_output+ m_FilePath.ElementAt(fileloop);
+		pCtrl->AddString(m_output);
+		m_output=m_FilePath.ElementAt(fileloop);
 		pCtrl->AddString(m_output);
 		// Convert a TCHAR string to a LPCSTR
 		CString filename = m_FilePath.ElementAt(fileloop);
@@ -162,7 +192,6 @@ int CRMDlg::NameProcessing()
 		// construct a std::string using the LPCSTR input
 		//std::string filename(pszConvertedAnsiString);
 		pMWPC->Processing(filename);
-		m_Progress->SetPos(fileloop);
 	}
 	P_GUI->DestroyWindow();
 	delete P_GUI;
@@ -173,7 +202,9 @@ int CRMDlg::NameProcessing()
 void CRMDlg::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	CDialogEx::OnOK();
+	CAboutDlg AboutDlg;
+	AboutDlg.DoModal();
+	//CDialogEx::OnOK();
 }
 
 

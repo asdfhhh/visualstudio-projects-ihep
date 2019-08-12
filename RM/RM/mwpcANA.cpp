@@ -138,11 +138,16 @@ void MWPCANA::Processing(CString filename)
 	matchY = new uint32_t[SLICESIZE*XCHANNELNUM];
 	matchIdx = 0;
 
-
-	while (f0.read((char*)(buf), sizeof(uint32_t))) {
+	f0.seekg(0, f0.end);
+	size_t fileloop = f0.tellg();
+	m_Progress->SetRange(0, 100);
+	f0.seekg(0, f0.beg);
+	while (f0.read((char*)(buf), sizeof(uint32_t)))
+	{
 		swap32((uint32_t*)buf);
 		if (PERSON_DEBUG) cout << hex << "head binary: " << setw(8) << setfill('0') << (*(uint32_t*)buf) << endl;
-		if ((*(uint32_t*)buf) == 0xee1234ee) {
+		if ((*(uint32_t*)buf) == 0xee1234ee) 
+		{
 			f0.read((char*)(buf), 15 * sizeof(uint32_t));
 			swap32(((uint32_t*)buf) + 9);
 			t0Count = ((uint32_t*)buf)[9];
@@ -159,7 +164,8 @@ void MWPCANA::Processing(CString filename)
 			neutron.t0num = t0Count;
 			hitT.t0num = t0Count;
 
-			if (eventMapIdx != 0) {
+			if (eventMapIdx != 0)
+			{
 				sliceCount = eventMapIdx - 1;
 				//memset(eventMapT, 0, SLICESIZE*SIGNALSIZE*sizeof(uint32_t));
 				//memset(eventMapT, 0, ((eventMapSlice[sliceCount]+1)*SIGNALSIZE)<<2);
@@ -178,6 +184,7 @@ void MWPCANA::Processing(CString filename)
 			processMap();
 			matchNeutronY();
 		}
+		m_Progress->SetPos(100*f0.tellg()/fileloop);
 	}
 
 	tree0->Write("t0", TObject::kOverwrite);
@@ -196,8 +203,11 @@ void MWPCANA::Processing(CString filename)
 	}
 	f1->Close();
 
-	output_message.Format(_T("final T0 number: %d, totalEvent: %d, validEvent: %d, signal: %d",
-		neutron.t0num, totalEvent, validEvent, signalNum));
+	output_message.Format(_T("final T0 number: %d, totalEvent: %d"),neutron.t0num, totalEvent);
+	pCtrl->AddString(output_message);
+	output_message.Format(_T("validEvent: %d, signal : %d"),validEvent, signalNum);
+	pCtrl->AddString(output_message);
+	output_message.Format(_T("ROOT file is constructed!"));
 	pCtrl->AddString(output_message);
 	free(buf);
 	delete [] hBase;
